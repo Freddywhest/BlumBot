@@ -15,3 +15,6 @@ session_user_agents.json
 
 # Ignore the Push.bat
 Push.bat
+
+# Ignore all files ending with .session
+*.session

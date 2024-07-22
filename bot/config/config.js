@@ -37,6 +37,10 @@ const settings = {
   USE_PROXY_FROM_FILE: process.env.USE_PROXY_FROM_FILE
     ? process.env.USE_PROXY_FROM_FILE.toLowerCase() === "true"
     : false,
+
+  AUTO_JOIN_TRIBE: process.env.AUTO_JOIN_TRIBE
+    ? process.env.AUTO_JOIN_TRIBE.toLowerCase() === "true"
+    : true,
 };
 
 module.exports = settings;

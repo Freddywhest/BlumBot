@@ -27,6 +27,7 @@
 | **AUTO_PLAY_GAMES**           | Whether the bot should play blum game and claim reward (True / False)     |
 | **AUTO_START_FARMING**        | Whether the bot should start farming (True / False)                       |
 | **AUTO_CLAIM_FARMING_REWARD** | Whether the bot should claim farming rewards(True / False)                |
+| **AUTO_JOIN_TRIBE**           | Whether the bot should join tribe [Freddy_bots] (True / False)            |
 | **SLEEP_BETWEEN_TAP**         | Delay between taps in seconds (eg. 70)                                    |
 | **USE_PROXY_FROM_FILE**       | Whether to use proxy from the `bot/config/proxies.js` file (True / False) |
 
