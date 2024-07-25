@@ -1,7 +1,7 @@
 const { TelegramClient, sessions } = require("telegram");
 const { StringSession } = require("telegram/sessions");
-const input = require("input"); // npm i input
 const fs = require("fs");
+const { input } = require("@inquirer/prompts");
 const logger = require("../utils/logger");
 const settings = require("../config/config");
 require("dotenv").config();
@@ -20,13 +20,15 @@ class Register {
 
   async #getSessionName() {
     const filePath = path.join(process.cwd(), "sessions");
-    let sessionsName = await input.text("Please enter your session name: ");
+    let sessionsName = await input({
+      message: "Please enter your session name: ",
+    });
     do {
       if (fs.existsSync(`${filePath}/${sessionsName}.session`)) {
         logger.warning(`Session name ${sessionsName} already exists!`);
-        sessionsName = await input.text(
-          "Please enter a different session name: "
-        );
+        sessionsName = await input({
+          message: "Please enter a different session name: ",
+        });
       }
     } while (fs.existsSync(`${filePath}/${sessionsName}.session`));
     return sessionsName;
@@ -61,10 +63,18 @@ class Register {
     );
 
     await client.start({
-      phoneNumber: async () => await input.text("Please enter your number: "),
-      password: async () => await input.text("Please enter your password: "),
+      phoneNumber: async () =>
+        await input({
+          message: "Please enter your number: ",
+        }),
+      password: async () =>
+        await input({
+          message: "Please enter your password: ",
+        }),
       phoneCode: async () =>
-        await input.text("Please enter the code you received: "),
+        await input({
+          message: "Please enter the code you received: ",
+        }),
       onError: (err) => console.error(err),
     });
 
