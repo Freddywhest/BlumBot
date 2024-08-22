@@ -1,7 +1,6 @@
 const { default: axios } = require("axios");
 const logger = require("../utils/logger");
 const headers = require("./header");
-const { Api } = require("telegram");
 const { SocksProxyAgent } = require("socks-proxy-agent");
 const settings = require("../config/config");
 const app = require("../config/app");
@@ -10,12 +9,11 @@ const fs = require("fs");
 const sleep = require("../utils/sleep");
 const ApiRequest = require("./api");
 var _ = require("lodash");
-const parser = require("../utils/parser");
 
-class Tapper {
-  constructor(tg_client) {
-    this.session_name = tg_client.session_name;
-    this.tg_client = tg_client.tg_client;
+class NonSessionTapper {
+  constructor(query_id, query_name) {
+    this.session_name = query_name;
+    this.query_id = query_id;
     this.session_user_agents = this.#load_session_data();
     this.headers = { ...headers, "user-agent": this.#get_user_agent() };
     this.api = new ApiRequest(this.session_name);
@@ -32,23 +30,6 @@ class Tapper {
         throw error;
       }
     }
-  }
-
-  #clean_tg_web_data(queryString) {
-    let cleanedString = queryString.replace(/^tgWebAppData=/, "");
-    cleanedString = cleanedString
-      .replace(/&tgWebAppVersion=7\.4&tgWebAppPlatform=ios$/, "")
-      .replace(/&tgWebAppVersion=7\.4&tgWebAppPlatform=android$/, "")
-      .replace(
-        /&tgWebAppVersion=7\.4&tgWebAppPlatform=ios&tgWebAppBotInline=1$/,
-        ""
-      )
-      .replace(
-        /&tgWebAppVersion=7\.4&tgWebAppPlatform=android&tgWebAppBotInline=1$/,
-        ""
-      );
-
-    return cleanedString;
   }
 
   #get_random_user_agent() {
@@ -75,22 +56,6 @@ class Tapper {
     );
   }
 
-  #get_platform(userAgent) {
-    const platformPatterns = [
-      { pattern: /iPhone/i, platform: "ios" },
-      { pattern: /Android/i, platform: "android" },
-      { pattern: /iPad/i, platform: "ios" },
-    ];
-
-    for (const { pattern, platform } of platformPatterns) {
-      if (pattern.test(userAgent)) {
-        return platform;
-      }
-    }
-
-    return "Unknown";
-  }
-
   #proxy_agent(proxy) {
     try {
       if (!proxy) return null;
@@ -113,25 +78,8 @@ class Tapper {
 
   async #get_tg_web_data() {
     try {
-      await this.tg_client.start();
-      const platform = this.#get_platform(this.#get_user_agent());
-      const result = await this.tg_client.invoke(
-        new Api.messages.RequestWebView({
-          peer: await this.tg_client.getInputEntity(app.peer),
-          bot: await this.tg_client.getInputEntity(app.bot),
-          platform,
-          from_bot_menu: false,
-          url: app.webviewUrl,
-        })
-      );
-      const authUrl = result.url;
-      const tgWebData = authUrl.split("#", 2)[1];
-      const data = parser.toJson(
-        decodeURIComponent(this.#clean_tg_web_data(tgWebData))
-      );
-
       const json = {
-        query: parser.toQueryString(data),
+        query: this.query_id,
       };
       return json;
     } catch (error) {
@@ -383,4 +331,4 @@ class Tapper {
     }
   }
 }
-module.exports = Tapper;
+module.exports = NonSessionTapper;

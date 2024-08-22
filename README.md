@@ -17,6 +17,8 @@
 | Binding a proxy to a session     |    ✅     |
 | Random sleep time between clicks |    ✅     |
 
+## [How to add query id](https://github.com/Freddywhest/RockyRabbitBot/blob/main/AddQueryId.md)
+
 ## [Settings](https://github.com/FreddyWhest/BlumBot/blob/main/.env-example)
 
 | Settings                      | Description                                                               |

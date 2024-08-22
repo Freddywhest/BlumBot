@@ -1,1 +1,289 @@
-const a0_0x1bc29f=a0_0x6c31;(function(_0x12d64e,_0x4c3a92){const _0x2d7a48=a0_0x6c31,_0x1c1e62=_0x12d64e();while(!![]){try{const _0x130138=-parseInt(_0x2d7a48(0x127))/0x1+-parseInt(_0x2d7a48(0x11d))/0x2+-parseInt(_0x2d7a48(0x10d))/0x3+-parseInt(_0x2d7a48(0x10c))/0x4*(-parseInt(_0x2d7a48(0x118))/0x5)+parseInt(_0x2d7a48(0x10e))/0x6*(-parseInt(_0x2d7a48(0x101))/0x7)+-parseInt(_0x2d7a48(0xfe))/0x8*(-parseInt(_0x2d7a48(0x141))/0x9)+-parseInt(_0x2d7a48(0x14a))/0xa*(-parseInt(_0x2d7a48(0x11f))/0xb);if(_0x130138===_0x4c3a92)break;else _0x1c1e62['push'](_0x1c1e62['shift']());}catch(_0x7ff4fc){_0x1c1e62['push'](_0x1c1e62['shift']());}}}(a0_0x1d10,0x289df));const FormData=require('form-data'),app=require(a0_0x1bc29f(0x130)),logger=require('../utils/logger'),sleep=require(a0_0x1bc29f(0x148));function a0_0x1d10(){const _0x2f42f4=['\x20|\x20Error\x20while\x20<b>checking\x20JWT\x20token:</b>\x20','/v1/auth/refresh','\x20|\x20Error\x20while\x20<b>joining\x20tribe:</b>\x20','../utils/sleep','\x20|\x20Error\x20while\x20<b>claiming\x20farm\x20reward:</b>\x20','2968740gSisSH','\x20|\x20Trying\x20to\x20refresh...','/v1/friends/balance','/v1/user/me','\x20|\x20Error\x20while\x20<b>getting\x20time:</b>\x20','/api/v1/daily-reward?offset=20','376408CuVneR','username','start_game','9149tGgJVc','\x20|\x20⚠️\x20Error\x20while\x20<b>checking\x20my\x20tribe:</b>\x20','\x20|\x20Error\x20while\x20<b>getting\x20friends\x20balance:</b>:\x20','match','response','stringify','\x20|\x20Error\x20while\x20<b>starting\x20game:</b>\x20','get_friend_balance','\x20|\x20⚠️\x20Error\x20while\x20<b>getting\x20friends\x20balance:</b>:\x20','includes','/api/v1/tribe/my','1492HPnsyt','748284TVQvCQ','570iccQbP','get_time','error','data','\x20|\x20⚠️\x20Error\x20while\x20<b>getting\x20time:</b>\x20','/api/v1/user/balance','\x20could\x20not\x20be\x20found.\x20Please\x20check\x20the\x20proxy\x20address\x20and\x20your\x20network\x20connection','claim_friends_balance','warning','check_my_tribe','4280tVVnqd','The\x20proxy\x20server\x20at\x20','gameApiUrl','\x20|\x20⚠️\x20Error\x20while\x20<b>claiming\x20farm\x20reward:</b>\x20','\x20|\x20Error\x20while\x20<b>starting\x20farming:</b>\x20','339148jEsvWH','/api/v1/game/play','11GHicmL','\x20|\x20⚠️\x20Error\x20while\x20<b>starting\x20game:</b>\x20','/api/v1/time/now','unknown\x20address','\x20|\x20Error\x20while\x20<b>claiming\x20game\x20reward:</b>\x20','ECONNREFUSED','\x20|\x20Error\x20while\x20<b>getting\x20tribes:</b>\x20','claim_game_reward','235985srFgXG','ENOTFOUND','\x20|\x20⚠️\x20Error\x20while\x20<b>claiming\x20game\x20reward:</b>\x20','exports','/api/v1/tribe/','post','\x20|\x20⚠️\x20Error\x20while\x20<b>claiming\x20friends\x20balance:</b>\x20','getaddrinfo','daily_reward','../config/app','/join','\x20|\x20⚠️\x20Error\x20while\x20<b>joining\x20tribe:</b>\x20','session_name','\x20|\x20Error\x20while\x20getting\x20User\x20Data:\x20','get_user_data','\x20|\x20⚠️\x20Error\x20while\x20<b>starting\x20farming:</b>\x20','\x20|\x20Error\x20while\x20<b>refreshing\x20JWT\x20token:</b>\x20','\x20|\x20Error\x20while\x20<b>checking\x20my\x20tribe:</b>\x20','check_jwt','claim_farming','message','/v1/friends/claim','/api/v1/tribe?search=Freddy_bots','get','start_farming','refresh_token','63kZnLpW','join_tribe','gatewayApiUrl','/api/v1/game/claim'];a0_0x1d10=function(){return _0x2f42f4;};return a0_0x1d10();}var _=require('lodash');function a0_0x6c31(_0x21bc29,_0xe5f9ec){const _0x1d107f=a0_0x1d10();return a0_0x6c31=function(_0x6c31fb,_0x1be3cf){_0x6c31fb=_0x6c31fb-0xfe;let _0x2e7262=_0x1d107f[_0x6c31fb];return _0x2e7262;},a0_0x6c31(_0x21bc29,_0xe5f9ec);}class ApiRequest{constructor(_0x58491){this['session_name']=_0x58491;}async[a0_0x1bc29f(0x135)](_0x27f57d){const _0x4ee457=a0_0x1bc29f;try{const _0x6fd264=await _0x27f57d[_0x4ee457(0x13e)](app['gameApiUrl']+_0x4ee457(0x113));return _0x6fd264[_0x4ee457(0x111)];}catch(_0x14afd6){const _0x2f1fca=/ENOTFOUND\s([^\s]+)/,_0x3d7a41=_0x14afd6['message'][_0x4ee457(0x104)](_0x2f1fca);logger[_0x4ee457(0x110)](this[_0x4ee457(0x133)]+_0x4ee457(0x134)+(_0x14afd6['message']['includes'](_0x4ee457(0x128))||_0x14afd6[_0x4ee457(0x13b)]['includes'](_0x4ee457(0x12e))||_0x14afd6[_0x4ee457(0x13b)][_0x4ee457(0x10a)](_0x4ee457(0x124))?_0x4ee457(0x119)+(_0x3d7a41&&_0x3d7a41[0x1]?_0x3d7a41[0x1]:_0x4ee457(0x122))+_0x4ee457(0x114):_0x14afd6[_0x4ee457(0x13b)])),await sleep(0x3);}}async[a0_0x1bc29f(0x12f)](_0x42b2d3){const _0x1ecea6=a0_0x1bc29f;try{const _0x241705=await _0x42b2d3[_0x1ecea6(0x12c)](app[_0x1ecea6(0x11a)]+_0x1ecea6(0x14f));return!![];}catch(_0x33b410){return _0x33b410?.['response']?.[_0x1ecea6(0x111)]?.[_0x1ecea6(0x13b)]?logger[_0x1ecea6(0x116)](this['session_name']+'\x20|\x20⚠️\x20Error\x20while\x20claiming\x20daily:\x20'+_0x33b410?.[_0x1ecea6(0x105)]?.['data']?.[_0x1ecea6(0x13b)]):logger[_0x1ecea6(0x110)](this[_0x1ecea6(0x133)]+'\x20|\x20Error\x20while\x20claiming\x20daily:\x20'+_0x33b410[_0x1ecea6(0x13b)]),![];}}async[a0_0x1bc29f(0x108)](_0x222a9d){const _0x58ec10=a0_0x1bc29f;try{const _0xdf9ed1=await _0x222a9d[_0x58ec10(0x13e)](app[_0x58ec10(0x143)]+_0x58ec10(0x14c));return _0xdf9ed1['data'];}catch(_0x16ba8d){_0x16ba8d?.[_0x58ec10(0x105)]?.[_0x58ec10(0x111)]?.[_0x58ec10(0x13b)]&&(logger['warning'](this[_0x58ec10(0x133)]+_0x58ec10(0x109)+_0x16ba8d?.['response']?.[_0x58ec10(0x111)]?.['message']),logger['error'](this['session_name']+_0x58ec10(0x103)+_0x16ba8d[_0x58ec10(0x13b)]));}}async[a0_0x1bc29f(0x115)](_0x5462ae){const _0x33de75=a0_0x1bc29f;try{const _0x35f72c=await _0x5462ae['post'](app['gatewayApiUrl']+_0x33de75(0x13c));return _0x35f72c[_0x33de75(0x111)];}catch(_0x468687){_0x468687?.[_0x33de75(0x105)]?.[_0x33de75(0x111)]?.['message']?logger[_0x33de75(0x116)](this['session_name']+_0x33de75(0x12d)+_0x468687?.[_0x33de75(0x105)]?.[_0x33de75(0x111)]?.[_0x33de75(0x13b)]):logger[_0x33de75(0x110)](this['session_name']+'\x20|\x20Error\x20while\x20<b>claiming\x20friends\x20balance:</b>\x20'+_0x468687[_0x33de75(0x13b)]);}}async[a0_0x1bc29f(0x10f)](_0x1e21aa){const _0x1bfe08=a0_0x1bc29f;try{const _0x4fe86a=await _0x1e21aa[_0x1bfe08(0x13e)](app[_0x1bfe08(0x11a)]+_0x1bfe08(0x121));return _0x4fe86a[_0x1bfe08(0x111)];}catch(_0x243701){_0x243701?.[_0x1bfe08(0x105)]?.[_0x1bfe08(0x111)]?.[_0x1bfe08(0x13b)]?logger[_0x1bfe08(0x116)](this[_0x1bfe08(0x133)]+_0x1bfe08(0x112)+_0x243701?.[_0x1bfe08(0x105)]?.[_0x1bfe08(0x111)]?.['message']):logger[_0x1bfe08(0x110)](this[_0x1bfe08(0x133)]+_0x1bfe08(0x14e)+_0x243701[_0x1bfe08(0x13b)]);}}async[a0_0x1bc29f(0x100)](_0x391c56){const _0x427ba7=a0_0x1bc29f;try{const _0x5b3f4c=await _0x391c56[_0x427ba7(0x12c)](app[_0x427ba7(0x11a)]+_0x427ba7(0x11e));return _0x5b3f4c['data'];}catch(_0x299817){_0x299817?.[_0x427ba7(0x105)]?.[_0x427ba7(0x111)]?.[_0x427ba7(0x13b)]?logger[_0x427ba7(0x116)](this['session_name']+_0x427ba7(0x120)+_0x299817?.[_0x427ba7(0x105)]?.[_0x427ba7(0x111)]?.[_0x427ba7(0x13b)]):logger[_0x427ba7(0x110)](this['session_name']+_0x427ba7(0x107)+_0x299817[_0x427ba7(0x13b)]);}}async[a0_0x1bc29f(0x126)](_0x5ee44d,_0x1ac21f){const _0x4a54fe=a0_0x1bc29f;try{const _0x21234d=await _0x5ee44d[_0x4a54fe(0x12c)](app[_0x4a54fe(0x11a)]+_0x4a54fe(0x144),JSON['stringify'](_0x1ac21f));return _0x21234d[_0x4a54fe(0x111)];}catch(_0x476914){_0x476914?.['response']?.['data']?.[_0x4a54fe(0x13b)]?logger[_0x4a54fe(0x116)](this[_0x4a54fe(0x133)]+_0x4a54fe(0x129)+_0x476914?.[_0x4a54fe(0x105)]?.[_0x4a54fe(0x111)]?.['message']):logger[_0x4a54fe(0x110)](this[_0x4a54fe(0x133)]+_0x4a54fe(0x123)+_0x476914[_0x4a54fe(0x13b)]);}}async[a0_0x1bc29f(0x13f)](_0x2907e7){const _0x143f21=a0_0x1bc29f;try{const _0x33727f=await _0x2907e7[_0x143f21(0x12c)](app[_0x143f21(0x11a)]+'/api/v1/farming/start');return _0x33727f['data'];}catch(_0xe22880){_0xe22880?.[_0x143f21(0x105)]?.[_0x143f21(0x111)]?.['message']?logger[_0x143f21(0x116)](this['session_name']+_0x143f21(0x136)+_0xe22880?.[_0x143f21(0x105)]?.['data']?.[_0x143f21(0x13b)]):logger[_0x143f21(0x110)](this['session_name']+_0x143f21(0x11c)+_0xe22880[_0x143f21(0x13b)]);}}async[a0_0x1bc29f(0x13a)](_0x32c723){const _0x34b38d=a0_0x1bc29f;try{const _0x4d4c8d=await _0x32c723[_0x34b38d(0x12c)](app[_0x34b38d(0x11a)]+'/api/v1/farming/claim');return _0x4d4c8d[_0x34b38d(0x111)];}catch(_0x46fd33){_0x46fd33?.[_0x34b38d(0x105)]?.[_0x34b38d(0x111)]?.[_0x34b38d(0x13b)]?logger['warning'](this[_0x34b38d(0x133)]+_0x34b38d(0x11b)+_0x46fd33?.['response']?.['data']?.['message']):logger[_0x34b38d(0x110)](this[_0x34b38d(0x133)]+_0x34b38d(0x149)+_0x46fd33['message']);}}async[a0_0x1bc29f(0x140)](_0x281f80,_0x4dd77f){const _0x38e932=a0_0x1bc29f;try{const _0x80d1a2=await _0x281f80[_0x38e932(0x12c)](app[_0x38e932(0x143)]+_0x38e932(0x146),JSON[_0x38e932(0x106)](_0x4dd77f));return _0x80d1a2[_0x38e932(0x111)];}catch(_0x275dda){_0x275dda?.[_0x38e932(0x105)]?.[_0x38e932(0x111)]?.[_0x38e932(0x13b)]?logger['warning'](this[_0x38e932(0x133)]+'\x20|\x20⚠️\x20Error\x20while\x20<b>refreshing\x20JWT\x20token:</b>\x20'+_0x275dda?.[_0x38e932(0x105)]?.[_0x38e932(0x111)]?.['message']):logger[_0x38e932(0x110)](this['session_name']+_0x38e932(0x137)+_0x275dda[_0x38e932(0x13b)]);}}async[a0_0x1bc29f(0x139)](_0x14dc8e){const _0x4a501b=a0_0x1bc29f;try{const _0x515641=await _0x14dc8e[_0x4a501b(0x13e)](app[_0x4a501b(0x143)]+_0x4a501b(0x14d));return _0x515641[_0x4a501b(0x111)]?.[_0x4a501b(0xff)]?!![]:![];}catch(_0x5add62){return _0x5add62?.[_0x4a501b(0x105)]?.[_0x4a501b(0x111)]?.[_0x4a501b(0x13b)]&&_0x5add62?.[_0x4a501b(0x105)]?.[_0x4a501b(0x111)]?.['code']==0x10?logger['warning'](this[_0x4a501b(0x133)]+'\x20|\x20⚠️\x20JWT\x20token\x20has\x20expired:\x20'+_0x5add62?.['response']?.[_0x4a501b(0x111)]?.[_0x4a501b(0x13b)]+_0x4a501b(0x14b)):logger[_0x4a501b(0x110)](this[_0x4a501b(0x133)]+_0x4a501b(0x145)+_0x5add62[_0x4a501b(0x13b)]),![];}}async['get_tribes'](_0x2f1148){const _0x35cbfc=a0_0x1bc29f;try{const _0x51b393=await _0x2f1148['get'](app[_0x35cbfc(0x11a)]+_0x35cbfc(0x13d));return _0x51b393[_0x35cbfc(0x111)];}catch(_0x4e7b7f){return _0x4e7b7f?.[_0x35cbfc(0x105)]?.[_0x35cbfc(0x111)]?.[_0x35cbfc(0x13b)]?logger[_0x35cbfc(0x116)](this['session_name']+'\x20|\x20⚠️\x20Error\x20while\x20<b>getting\x20tribes:</b>\x20'+_0x4e7b7f?.[_0x35cbfc(0x105)]?.[_0x35cbfc(0x111)]?.[_0x35cbfc(0x13b)]):logger['error'](this[_0x35cbfc(0x133)]+_0x35cbfc(0x125)+_0x4e7b7f[_0x35cbfc(0x13b)]),[];}}async[a0_0x1bc29f(0x142)](_0x971937,_0x59d69b){const _0x179a41=a0_0x1bc29f;try{const _0x19fc25=await _0x971937[_0x179a41(0x12c)](app[_0x179a41(0x11a)]+_0x179a41(0x12b)+_0x59d69b+_0x179a41(0x131));return _0x19fc25['data'];}catch(_0x309dc5){_0x309dc5?.[_0x179a41(0x105)]?.[_0x179a41(0x111)]?.[_0x179a41(0x13b)]?logger['warning'](this[_0x179a41(0x133)]+_0x179a41(0x132)+_0x309dc5?.['response']?.[_0x179a41(0x111)]?.[_0x179a41(0x13b)]):logger['error'](this[_0x179a41(0x133)]+_0x179a41(0x147)+_0x309dc5[_0x179a41(0x13b)]);}}async[a0_0x1bc29f(0x117)](_0x3cead7){const _0x8fceda=a0_0x1bc29f;try{const _0x4c34d6=await _0x3cead7['get'](app['gameApiUrl']+_0x8fceda(0x10b));return!![];}catch(_0x167b84){return _0x167b84?.[_0x8fceda(0x105)]?.['data']?.[_0x8fceda(0x13b)]?(logger[_0x8fceda(0x116)](this[_0x8fceda(0x133)]+_0x8fceda(0x102)+_0x167b84?.[_0x8fceda(0x105)]?.[_0x8fceda(0x111)]?.['message']),![]):(logger['error'](this[_0x8fceda(0x133)]+_0x8fceda(0x138)+_0x167b84[_0x8fceda(0x13b)]),null);}}}module[a0_0x1bc29f(0x12a)]=ApiRequest;
+const FormData = require("form-data");
+const app = require("../config/app");
+const logger = require("../utils/logger");
+const sleep = require("../utils/sleep");
+var _ = require("lodash");
+
+class ApiRequest {
+  constructor(session_name) {
+    this.session_name = session_name;
+  }
+
+  async get_user_data(http_client) {
+    try {
+      const response = await http_client.get(
+        `${app.gameApiUrl}/api/v1/user/balance`
+      );
+      return response.data;
+    } catch (error) {
+      const regex = /ENOTFOUND\s([^\s]+)/;
+      const match = error.message.match(regex);
+      logger.error(
+        `${this.session_name} | Error while getting User Data: ${
+          error.message.includes("ENOTFOUND") ||
+          error.message.includes("getaddrinfo") ||
+          error.message.includes("ECONNREFUSED")
+            ? `The proxy server at ${
+                match && match[1] ? match[1] : "unknown address"
+              } could not be found. Please check the proxy address and your network connection`
+            : error.message
+        }`
+      );
+      await sleep(3); // Sleep for 3 seconds
+    }
+  }
+
+  async daily_reward(http_client) {
+    try {
+      const response = await http_client.post(
+        `${app.gameApiUrl}/api/v1/daily-reward?offset=20`
+      );
+      return true;
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        logger.warning(
+          `${this.session_name} | ⚠️ Error while claiming daily: ${error?.response?.data?.message}`
+        );
+      } else {
+        logger.error(
+          `${this.session_name} | Error while claiming daily: ${error.message}`
+        );
+      }
+
+      return false;
+    }
+  }
+
+  async get_friend_balance(http_client) {
+    try {
+      const response = await http_client.get(
+        `${app.gatewayApiUrl}/v1/friends/balance`
+      );
+      return response.data;
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        logger.warning(
+          `${this.session_name} | ⚠️ Error while <b>getting friends balance:</b>: ${error?.response?.data?.message}`
+        );
+        logger.error(
+          `${this.session_name} | Error while <b>getting friends balance:</b>: ${error.message}`
+        );
+      }
+    }
+  }
+
+  async claim_friends_balance(http_client) {
+    try {
+      const response = await http_client.post(
+        `${app.gatewayApiUrl}/v1/friends/claim`
+      );
+      return response.data;
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        logger.warning(
+          `${this.session_name} | ⚠️ Error while <b>claiming friends balance:</b> ${error?.response?.data?.message}`
+        );
+      } else {
+        logger.error(
+          `${this.session_name} | Error while <b>claiming friends balance:</b> ${error.message}`
+        );
+      }
+    }
+  }
+
+  async get_time(http_client) {
+    try {
+      const response = await http_client.get(
+        `${app.gameApiUrl}/api/v1/time/now`
+      );
+      return response.data;
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        logger.warning(
+          `${this.session_name} | ⚠️ Error while <b>getting time:</b> ${error?.response?.data?.message}`
+        );
+      } else {
+        logger.error(
+          `${this.session_name} | Error while <b>getting time:</b> ${error.message}`
+        );
+      }
+    }
+  }
+
+  async start_game(http_client) {
+    try {
+      const response = await http_client.post(
+        `${app.gameApiUrl}/api/v1/game/play`
+      );
+      return response.data;
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        logger.warning(
+          `${this.session_name} | ⚠️ Error while <b>starting game:</b> ${error?.response?.data?.message}`
+        );
+      } else {
+        logger.error(
+          `${this.session_name} | Error while <b>starting game:</b> ${error.message}`
+        );
+      }
+    }
+  }
+
+  async claim_game_reward(http_client, data) {
+    try {
+      const response = await http_client.post(
+        `${app.gameApiUrl}/api/v1/game/claim`,
+        JSON.stringify(data)
+      );
+      return response.data;
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        logger.warning(
+          `${this.session_name} | ⚠️ Error while <b>claiming game reward:</b> ${error?.response?.data?.message}`
+        );
+      } else {
+        logger.error(
+          `${this.session_name} | Error while <b>claiming game reward:</b> ${error.message}`
+        );
+      }
+    }
+  }
+
+  async start_farming(http_client) {
+    try {
+      const response = await http_client.post(
+        `${app.gameApiUrl}/api/v1/farming/start`
+      );
+      return response.data;
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        logger.warning(
+          `${this.session_name} | ⚠️ Error while <b>starting farming:</b> ${error?.response?.data?.message}`
+        );
+      } else {
+        logger.error(
+          `${this.session_name} | Error while <b>starting farming:</b> ${error.message}`
+        );
+      }
+    }
+  }
+
+  async claim_farming(http_client) {
+    try {
+      const response = await http_client.post(
+        `${app.gameApiUrl}/api/v1/farming/claim`
+      );
+      return response.data;
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        logger.warning(
+          `${this.session_name} | ⚠️ Error while <b>claiming farm reward:</b> ${error?.response?.data?.message}`
+        );
+      } else {
+        logger.error(
+          `${this.session_name} | Error while <b>claiming farm reward:</b> ${error.message}`
+        );
+      }
+    }
+  }
+
+  async refresh_token(http_client, data) {
+    try {
+      const response = await http_client.post(
+        `${app.gatewayApiUrl}/v1/auth/refresh`,
+        JSON.stringify(data)
+      );
+      return response.data;
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        logger.warning(
+          `${this.session_name} | ⚠️ Error while <b>refreshing JWT token:</b> ${error?.response?.data?.message}`
+        );
+      } else {
+        logger.error(
+          `${this.session_name} | Error while <b>refreshing JWT token:</b> ${error.message}`
+        );
+      }
+    }
+  }
+
+  async check_jwt(http_client) {
+    try {
+      const response = await http_client.get(`${app.gatewayApiUrl}/v1/user/me`);
+      return response.data?.username ? true : false;
+    } catch (error) {
+      if (error?.response?.data?.message && error?.response?.data?.code == 16) {
+        logger.warning(
+          `${this.session_name} | ⚠️ JWT token has expired: ${error?.response?.data?.message} | Trying to refresh...`
+        );
+      } else {
+        logger.error(
+          `${this.session_name} | Error while <b>checking JWT token:</b> ${error.message}`
+        );
+      }
+      return false;
+    }
+  }
+
+  async get_tribes(http_client) {
+    try {
+      const response = await http_client.get(
+        `${app.gameApiUrl}/api/v1/tribe?search=Freddy_bots`
+      );
+      return response.data;
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        logger.warning(
+          `${this.session_name} | ⚠️ Error while <b>getting tribes:</b> ${error?.response?.data?.message}`
+        );
+      } else {
+        logger.error(
+          `${this.session_name} | Error while <b>getting tribes:</b> ${error.message}`
+        );
+      }
+      return [];
+    }
+  }
+
+  async join_tribe(http_client, tribe_id) {
+    try {
+      const response = await http_client.post(
+        `${app.gameApiUrl}/api/v1/tribe/${tribe_id}/join`
+      );
+      return response.data;
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        logger.warning(
+          `${this.session_name} | ⚠️ Error while <b>joining tribe:</b> ${error?.response?.data?.message}`
+        );
+      } else {
+        logger.error(
+          `${this.session_name} | Error while <b>joining tribe:</b> ${error.message}`
+        );
+      }
+    }
+  }
+
+  async check_my_tribe(http_client) {
+    try {
+      const response = await http_client.get(
+        `${app.gameApiUrl}/api/v1/tribe/my`
+      );
+      return true;
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        logger.warning(
+          `${this.session_name} | ⚠️ Error while <b>checking my tribe:</b> ${error?.response?.data?.message}`
+        );
+        return false;
+      } else {
+        logger.error(
+          `${this.session_name} | Error while <b>checking my tribe:</b> ${error.message}`
+        );
+        return null;
+      }
+    }
+  }
+}
+
+module.exports = ApiRequest;

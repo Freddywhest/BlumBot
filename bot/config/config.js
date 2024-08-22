@@ -38,6 +38,10 @@ const settings = {
     ? process.env.USE_PROXY_FROM_FILE.toLowerCase() === "true"
     : false,
 
+  USE_QUERY_ID: process.env.USE_QUERY_ID
+    ? process.env.USE_QUERY_ID.toLowerCase() === "true"
+    : false,
+
   AUTO_JOIN_TRIBE: process.env.AUTO_JOIN_TRIBE
     ? process.env.AUTO_JOIN_TRIBE.toLowerCase() === "true"
     : true,
