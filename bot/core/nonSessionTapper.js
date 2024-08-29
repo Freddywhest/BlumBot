@@ -248,7 +248,11 @@ class NonSessionTapper {
         profile_data = await this.api.get_user_data(http_client);
         if (settings.AUTO_PLAY_GAMES) {
           // Game
-          if (profile_data?.playPasses > 0) {
+          while (profile_data?.playPasses > 0) {
+            logger.info(
+              `${this.session_name} | sleeping for 5 seconds before starting game...`
+            );
+            await sleep(5);
             const game_response = await this.api.start_game(http_client);
             if (game_response?.gameId) {
               logger.info(
