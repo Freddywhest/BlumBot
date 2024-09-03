@@ -1,12 +1,12 @@
-const FormData = require("form-data");
 const app = require("../config/app");
 const logger = require("../utils/logger");
 const sleep = require("../utils/sleep");
 var _ = require("lodash");
 
 class ApiRequest {
-  constructor(session_name) {
+  constructor(session_name, bot_name) {
     this.session_name = session_name;
+    this.bot_name = bot_name;
   }
 
   async get_user_data(http_client) {
@@ -19,7 +19,9 @@ class ApiRequest {
       const regex = /ENOTFOUND\s([^\s]+)/;
       const match = error.message.match(regex);
       logger.error(
-        `${this.session_name} | Error while getting User Data: ${
+        `<ye>[${this.bot_name}]</ye> | ${
+          this.session_name
+        } | Error while getting User Data: ${
           error.message.includes("ENOTFOUND") ||
           error.message.includes("getaddrinfo") ||
           error.message.includes("ECONNREFUSED")
@@ -36,17 +38,17 @@ class ApiRequest {
   async daily_reward(http_client) {
     try {
       const response = await http_client.post(
-        `${app.gameApiUrl}/api/v1/daily-reward?offset=20`
+        `${app.gameApiUrl}/api/v1/daily-reward?offset=10`
       );
-      return true;
+      return response.data == "OK";
     } catch (error) {
       if (error?.response?.data?.message) {
         logger.warning(
-          `${this.session_name} | ⚠️ Error while claiming daily: ${error?.response?.data?.message}`
+          `<ye>[${this.bot_name}]</ye> | ${this.session_name} | ⚠️ Error while claiming daily: ${error?.response?.data?.message}`
         );
       } else {
         logger.error(
-          `${this.session_name} | Error while claiming daily: ${error.message}`
+          `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Error while claiming daily: ${error.message}`
         );
       }
 
@@ -63,10 +65,10 @@ class ApiRequest {
     } catch (error) {
       if (error?.response?.data?.message) {
         logger.warning(
-          `${this.session_name} | ⚠️ Error while <b>getting friends balance:</b>: ${error?.response?.data?.message}`
+          `<ye>[${this.bot_name}]</ye> | ${this.session_name} | ⚠️ Error while <b>getting friends balance:</b>: ${error?.response?.data?.message}`
         );
         logger.error(
-          `${this.session_name} | Error while <b>getting friends balance:</b>: ${error.message}`
+          `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Error while <b>getting friends balance:</b>: ${error.message}`
         );
       }
     }
@@ -81,11 +83,11 @@ class ApiRequest {
     } catch (error) {
       if (error?.response?.data?.message) {
         logger.warning(
-          `${this.session_name} | ⚠️ Error while <b>claiming friends balance:</b> ${error?.response?.data?.message}`
+          `<ye>[${this.bot_name}]</ye> | ${this.session_name} | ⚠️ Error while <b>claiming friends balance:</b> ${error?.response?.data?.message}`
         );
       } else {
         logger.error(
-          `${this.session_name} | Error while <b>claiming friends balance:</b> ${error.message}`
+          `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Error while <b>claiming friends balance:</b> ${error.message}`
         );
       }
     }
@@ -100,11 +102,11 @@ class ApiRequest {
     } catch (error) {
       if (error?.response?.data?.message) {
         logger.warning(
-          `${this.session_name} | ⚠️ Error while <b>getting time:</b> ${error?.response?.data?.message}`
+          `<ye>[${this.bot_name}]</ye> | ${this.session_name} | ⚠️ Error while <b>getting time:</b> ${error?.response?.data?.message}`
         );
       } else {
         logger.error(
-          `${this.session_name} | Error while <b>getting time:</b> ${error.message}`
+          `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Error while <b>getting time:</b> ${error.message}`
         );
       }
     }
@@ -119,11 +121,11 @@ class ApiRequest {
     } catch (error) {
       if (error?.response?.data?.message) {
         logger.warning(
-          `${this.session_name} | ⚠️ Error while <b>starting game:</b> ${error?.response?.data?.message}`
+          `<ye>[${this.bot_name}]</ye> | ${this.session_name} | ⚠️ Error while <b>starting game:</b> ${error?.response?.data?.message}`
         );
       } else {
         logger.error(
-          `${this.session_name} | Error while <b>starting game:</b> ${error.message}`
+          `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Error while <b>starting game:</b> ${error.message}`
         );
       }
     }
@@ -139,11 +141,11 @@ class ApiRequest {
     } catch (error) {
       if (error?.response?.data?.message) {
         logger.warning(
-          `${this.session_name} | ⚠️ Error while <b>claiming game reward:</b> ${error?.response?.data?.message}`
+          `<ye>[${this.bot_name}]</ye> | ${this.session_name} | ⚠️ Error while <b>claiming game reward:</b> ${error?.response?.data?.message}`
         );
       } else {
         logger.error(
-          `${this.session_name} | Error while <b>claiming game reward:</b> ${error.message}`
+          `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Error while <b>claiming game reward:</b> ${error.message}`
         );
       }
     }
@@ -158,11 +160,11 @@ class ApiRequest {
     } catch (error) {
       if (error?.response?.data?.message) {
         logger.warning(
-          `${this.session_name} | ⚠️ Error while <b>starting farming:</b> ${error?.response?.data?.message}`
+          `<ye>[${this.bot_name}]</ye> | ${this.session_name} | ⚠️ Error while <b>starting farming:</b> ${error?.response?.data?.message}`
         );
       } else {
         logger.error(
-          `${this.session_name} | Error while <b>starting farming:</b> ${error.message}`
+          `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Error while <b>starting farming:</b> ${error.message}`
         );
       }
     }
@@ -177,11 +179,11 @@ class ApiRequest {
     } catch (error) {
       if (error?.response?.data?.message) {
         logger.warning(
-          `${this.session_name} | ⚠️ Error while <b>claiming farm reward:</b> ${error?.response?.data?.message}`
+          `<ye>[${this.bot_name}]</ye> | ${this.session_name} | ⚠️ Error while <b>claiming farm reward:</b> ${error?.response?.data?.message}`
         );
       } else {
         logger.error(
-          `${this.session_name} | Error while <b>claiming farm reward:</b> ${error.message}`
+          `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Error while <b>claiming farm reward:</b> ${error.message}`
         );
       }
     }
@@ -197,11 +199,11 @@ class ApiRequest {
     } catch (error) {
       if (error?.response?.data?.message) {
         logger.warning(
-          `${this.session_name} | ⚠️ Error while <b>refreshing JWT token:</b> ${error?.response?.data?.message}`
+          `<ye>[${this.bot_name}]</ye> | ${this.session_name} | ⚠️ Error while <b>refreshing JWT token:</b> ${error?.response?.data?.message}`
         );
       } else {
         logger.error(
-          `${this.session_name} | Error while <b>refreshing JWT token:</b> ${error.message}`
+          `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Error while <b>refreshing JWT token:</b> ${error.message}`
         );
       }
     }
@@ -214,11 +216,11 @@ class ApiRequest {
     } catch (error) {
       if (error?.response?.data?.message && error?.response?.data?.code == 16) {
         logger.warning(
-          `${this.session_name} | ⚠️ JWT token has expired: ${error?.response?.data?.message} | Trying to refresh...`
+          `<ye>[${this.bot_name}]</ye> | ${this.session_name} | ⚠️ JWT token has expired: ${error?.response?.data?.message} | Trying to refresh...`
         );
       } else {
         logger.error(
-          `${this.session_name} | Error while <b>checking JWT token:</b> ${error.message}`
+          `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Error while <b>checking JWT token:</b> ${error.message}`
         );
       }
       return false;
@@ -234,11 +236,11 @@ class ApiRequest {
     } catch (error) {
       if (error?.response?.data?.message) {
         logger.warning(
-          `${this.session_name} | ⚠️ Error while <b>getting tribes:</b> ${error?.response?.data?.message}`
+          `<ye>[${this.bot_name}]</ye> | ${this.session_name} | ⚠️ Error while <b>getting tribes:</b> ${error?.response?.data?.message}`
         );
       } else {
         logger.error(
-          `${this.session_name} | Error while <b>getting tribes:</b> ${error.message}`
+          `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Error while <b>getting tribes:</b> ${error.message}`
         );
       }
       return [];
@@ -254,11 +256,11 @@ class ApiRequest {
     } catch (error) {
       if (error?.response?.data?.message) {
         logger.warning(
-          `${this.session_name} | ⚠️ Error while <b>joining tribe:</b> ${error?.response?.data?.message}`
+          `<ye>[${this.bot_name}]</ye> | ${this.session_name} | ⚠️ Error while <b>joining tribe:</b> ${error?.response?.data?.message}`
         );
       } else {
         logger.error(
-          `${this.session_name} | Error while <b>joining tribe:</b> ${error.message}`
+          `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Error while <b>joining tribe:</b> ${error.message}`
         );
       }
     }
@@ -266,19 +268,25 @@ class ApiRequest {
 
   async check_my_tribe(http_client) {
     try {
-      const response = await http_client.get(
-        `${app.gameApiUrl}/api/v1/tribe/my`
-      );
+      await http_client.get(`${app.gameApiUrl}/api/v1/tribe/my`);
       return true;
     } catch (error) {
-      if (error?.response?.data?.message) {
+      if (
+        error?.response?.data?.message &&
+        error?.response?.data?.message?.includes("not find")
+      ) {
+        return true;
+      } else if (
+        error?.response?.data?.message &&
+        !error?.response?.data?.message?.includes("not find")
+      ) {
         logger.warning(
-          `${this.session_name} | ⚠️ Error while <b>checking my tribe:</b> ${error?.response?.data?.message}`
+          `<ye>[${this.bot_name}]</ye> | ${this.session_name} | ⚠️ Error while <b>checking my tribe:</b> ${error?.response?.data?.message}`
         );
         return false;
       } else {
         logger.error(
-          `${this.session_name} | Error while <b>checking my tribe:</b> ${error.message}`
+          `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Error while <b>checking my tribe:</b> ${error.message}`
         );
         return null;
       }

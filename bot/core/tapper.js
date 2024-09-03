@@ -11,19 +11,24 @@ const sleep = require("../utils/sleep");
 const ApiRequest = require("./api");
 var _ = require("lodash");
 const parser = require("../utils/parser");
+const path = require("path");
 
 class Tapper {
   constructor(tg_client) {
+    this.bot_name = "blum";
     this.session_name = tg_client.session_name;
     this.tg_client = tg_client.tg_client;
     this.session_user_agents = this.#load_session_data();
     this.headers = { ...headers, "user-agent": this.#get_user_agent() };
-    this.api = new ApiRequest(this.session_name);
+    this.api = new ApiRequest(this.session_name, this.bot_name);
+    this.sleep_floodwait = 0;
+    this.runOnce = false;
   }
 
   #load_session_data() {
     try {
-      const data = fs.readFileSync("session_user_agents.json", "utf8");
+      const filePath = path.join(process.cwd(), "session_user_agents.json");
+      const data = fs.readFileSync(filePath, "utf8");
       return JSON.parse(data);
     } catch (error) {
       if (error.code === "ENOENT") {
@@ -36,18 +41,10 @@ class Tapper {
 
   #clean_tg_web_data(queryString) {
     let cleanedString = queryString.replace(/^tgWebAppData=/, "");
-    cleanedString = cleanedString
-      .replace(/&tgWebAppVersion=7\.4&tgWebAppPlatform=ios$/, "")
-      .replace(/&tgWebAppVersion=7\.4&tgWebAppPlatform=android$/, "")
-      .replace(
-        /&tgWebAppVersion=7\.4&tgWebAppPlatform=ios&tgWebAppBotInline=1$/,
-        ""
-      )
-      .replace(
-        /&tgWebAppVersion=7\.4&tgWebAppPlatform=android&tgWebAppBotInline=1$/,
-        ""
-      );
-
+    cleanedString = cleanedString.replace(
+      /&tgWebAppVersion=.*?&tgWebAppPlatform=.*?(?:&tgWebAppBotInline=.*?)?$/,
+      ""
+    );
     return cleanedString;
   }
 
@@ -61,7 +58,9 @@ class Tapper {
       return this.session_user_agents[this.session_name];
     }
 
-    logger.info(`${this.session_name} | Generating new user agent...`);
+    logger.info(
+      `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Generating new user agent...`
+    );
     const newUserAgent = this.#get_random_user_agent();
     this.session_user_agents[this.session_name] = newUserAgent;
     this.#save_session_data(this.session_user_agents);
@@ -69,10 +68,8 @@ class Tapper {
   }
 
   #save_session_data(session_user_agents) {
-    fs.writeFileSync(
-      "session_user_agents.json",
-      JSON.stringify(session_user_agents, null, 2)
-    );
+    const filePath = path.join(process.cwd(), "session_user_agents.json");
+    fs.writeFileSync(filePath, JSON.stringify(session_user_agents, null, 2));
   }
 
   #get_platform(userAgent) {
@@ -103,7 +100,7 @@ class Tapper {
       return new SocksProxyAgent(proxy_url);
     } catch (e) {
       logger.error(
-        `${
+        `<ye>[${this.bot_name}]</ye> | ${
           this.session_name
         } | Proxy agent error: ${e}\nProxy: ${JSON.stringify(proxy, null, 2)}`
       );
@@ -115,6 +112,27 @@ class Tapper {
     try {
       await this.tg_client.start();
       const platform = this.#get_platform(this.#get_user_agent());
+      if (!this.runOnce) {
+        logger.info(
+          `<ye>[${this.bot_name}]</ye> | ${this.session_name} | 📡 Waiting for authorization...`
+        );
+        const botHistory = await this.tg_client.invoke(
+          new Api.messages.GetHistory({
+            peer: await this.tg_client.getInputEntity(app.bot),
+            limit: 10,
+          })
+        );
+        if (botHistory.messages.length < 1) {
+          await this.tg_client.invoke(
+            new Api.messages.SendMessage({
+              message: "/start",
+              silent: true,
+              noWebpage: true,
+              peer: await this.tg_client.getInputEntity(app.peer),
+            })
+          );
+        }
+      }
       const result = await this.tg_client.invoke(
         new Api.messages.RequestWebView({
           peer: await this.tg_client.getInputEntity(app.peer),
@@ -133,16 +151,47 @@ class Tapper {
       const json = {
         query: parser.toQueryString(data),
       };
+
       return json;
     } catch (error) {
-      logger.error(
-        `${this.session_name} | ❗️Unknown error during Authorization: ${error}`
-      );
+      const regex = /A wait of (\d+) seconds/;
+      if (
+        error.message.includes("FloodWaitError") ||
+        error.message.match(regex)
+      ) {
+        const match = error.message.match(regex);
+
+        if (match) {
+          this.sleep_floodwait =
+            new Date().getTime() / 1000 + parseInt(match[1], 10) + 10;
+        } else {
+          this.sleep_floodwait = new Date().getTime() / 1000 + 50;
+        }
+        logger.error(
+          `<ye>[${this.bot_name}]</ye> | ${
+            this.session_name
+          } | Some flood error, waiting ${
+            this.sleep_floodwait - new Date().getTime() / 1000
+          } seconds to try again...`
+        );
+      } else {
+        logger.error(
+          `<ye>[${this.bot_name}]</ye> | ${this.session_name} | ❗️Unknown error during Authorization: ${error}`
+        );
+      }
       throw error;
     } finally {
-      /* await this.tg_client.disconnect(); */
+      if (this.tg_client.connected) {
+        await this.tg_client.destroy();
+      }
       await sleep(1);
-      logger.info(`${this.session_name} | 🚀 Starting session...`);
+      if (!this.runOnce) {
+        logger.info(
+          `<ye>[${this.bot_name}]</ye> | ${this.session_name} | 🚀 Starting session...`
+        );
+      }
+
+      this.runOnce = true;
     }
   }
 
@@ -155,10 +204,18 @@ class Tapper {
 
       return response.data?.token;
     } catch (error) {
-      logger.error(
-        `${this.session_name} | ❗️Unknown error while getting Access Token: ${error}`
-      );
-      await sleep(3); // 3 seconds delay
+      if (error?.response?.status > 499) {
+        logger.error(
+          `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Server Error, retrying again after sleep...`
+        );
+        await sleep(1);
+        return null;
+      } else {
+        logger.error(
+          `<ye>[${this.bot_name}]</ye> | ${this.session_name} | ❗️Unknown error while getting Access Token: ${error}`
+        );
+        await sleep(3); // 3 seconds delay
+      }
     }
   }
 
@@ -166,7 +223,9 @@ class Tapper {
     try {
       const response = await http_client.get("https://httpbin.org/ip");
       const ip = response.data.origin;
-      logger.info(`${this.session_name} | Proxy IP: ${ip}`);
+      logger.info(
+        `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Proxy IP: ${ip}`
+      );
     } catch (error) {
       if (
         error.message.includes("ENOTFOUND") ||
@@ -174,12 +233,14 @@ class Tapper {
         error.message.includes("ECONNREFUSED")
       ) {
         logger.error(
-          `${this.session_name} | Error: Unable to resolve the proxy address. The proxy server at ${proxy.ip}:${proxy.port} could not be found. Please check the proxy address and your network connection.`
+          `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Error: Unable to resolve the proxy address. The proxy server at ${proxy.ip}:${proxy.port} could not be found. Please check the proxy address and your network connection.`
         );
-        logger.error(`${this.session_name} | No proxy will be used.`);
+        logger.error(
+          `<ye>[${this.bot_name}]</ye> | ${this.session_name} | No proxy will be used.`
+        );
       } else {
         logger.error(
-          `${this.session_name} | Proxy: ${proxy.ip}:${proxy.port} | Error: ${error.message}`
+          `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Proxy: ${proxy.ip}:${proxy.port} | Error: ${error.message}`
         );
       }
 
@@ -219,7 +280,11 @@ class Tapper {
         const currentTime = Date.now() / 1000;
         if (currentTime - access_token_created_time >= 1800) {
           const tg_web_data = await this.#get_tg_web_data();
+
           access_token = await this.#get_access_token(tg_web_data, http_client);
+          if (!access_token) {
+            continue;
+          }
           http_client.defaults.headers[
             "authorization"
           ] = `Bearer ${access_token?.access}`;
@@ -231,17 +296,10 @@ class Tapper {
         const time = await this.api.get_time(http_client);
         const checkJWT = await this.api.check_jwt(http_client);
 
-        if (!checkJWT) {
-          logger.info(
-            `${this.session_name} | JWT token has expired. Trying to refresh...`
-          );
+        if (!checkJWT || !profile_data) {
           profile_data = null;
           access_token = null;
           access_token_created_time = 0;
-          continue;
-        }
-
-        if (!profile_data) {
           continue;
         }
 
@@ -256,10 +314,8 @@ class Tapper {
             ) {
               await this.api.join_tribe(http_client, get_tribes?.items[0].id);
               logger.info(
-                `${this.session_name} | Joined tribe: <lb>${get_tribes?.items[0].chatname}</lb>`
+                `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Joined tribe: <lb>${get_tribes?.items[0].chatname}</lb>`
               );
-            } else {
-              logger.info(`${this.session_name} | No tribe to join`);
             }
           }
         }
@@ -269,7 +325,7 @@ class Tapper {
           if (settings.AUTO_START_FARMING) {
             const farm_response = await this.api.start_farming(http_client);
             logger.info(
-              `${
+              `<ye>[${this.bot_name}]</ye> | ${
                 this.session_name
               } | Farming started  | End Time: <la>${new Date(
                 farm_response?.endTime
@@ -278,16 +334,20 @@ class Tapper {
           }
         } else if (time?.now >= profile_data?.farming?.endTime) {
           if (settings.AUTO_CLAIM_FARMING_REWARD) {
-            logger.info(`${this.session_name} | Claiming farming reward...`);
+            logger.info(
+              `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Claiming farming reward...`
+            );
             const farm_reward = await this.api.claim_farming(http_client);
             logger.info(
-              `${this.session_name} | 🎉 Claimed farming reward | Balance <lb>${farm_reward?.availableBalance}</lb> | Available Play Pass <ye>${farm_reward?.playPasses}</ye>`
+              `<ye>[${this.bot_name}]</ye> | ${this.session_name} | 🎉 Claimed farming reward | Balance <lb>${farm_reward?.availableBalance}</lb> | Available Play Pass <ye>${farm_reward?.playPasses}</ye>`
             );
           }
         } else if (time?.now >= profile_data?.farming?.startTime) {
           // in hours
           logger.info(
-            `${this.session_name} | Farming ends in ${Math.floor(
+            `<ye>[${this.bot_name}]</ye> | ${
+              this.session_name
+            } | Farming ends in ${Math.floor(
               (profile_data?.farming?.endTime - time?.now) / 1000 / 60 / 60
             )} hour(s)`
           );
@@ -301,14 +361,15 @@ class Tapper {
         if (settings.AUTO_PLAY_GAMES) {
           // Game
           while (profile_data?.playPasses > 0) {
+            profile_data = await this.api.get_user_data(http_client);
             logger.info(
-              `${this.session_name} | sleeping for 5 seconds before starting game...`
+              `<ye>[${this.bot_name}]</ye> | ${this.session_name} | sleeping for 20 seconds before starting game...`
             );
-            await sleep(5);
+            await sleep(20);
             const game_response = await this.api.start_game(http_client);
             if (game_response?.gameId) {
               logger.info(
-                `${this.session_name} | Game started  | Duration: <la> 35 seconds</la>`
+                `<ye>[${this.bot_name}]</ye> | ${this.session_name} | 🎲  Game started | Duration: <la> 35 seconds</la>`
               );
               await sleep(35);
               const points = _.random(100, 200);
@@ -325,7 +386,7 @@ class Tapper {
               profile_data = await this.api.get_user_data(http_client);
               if (game_reward.toLowerCase() == "ok") {
                 logger.info(
-                  `${this.session_name} | Game ended  | Earnings: <gr>+${points}</gr> Blum points | Available Play Passes: <ye>${profile_data?.playPasses}</ye> | Balance: <lb>${profile_data?.availableBalance}</lb>`
+                  `<ye>[${this.bot_name}]</ye> | ${this.session_name} | 🎲  Game ended  | Earnings: <gr>+${points}</gr> Blum points | Available Play Passes: <ye>${profile_data?.playPasses}</ye> | Balance: <lb>${profile_data?.availableBalance}</lb>`
                 );
               }
             }
@@ -349,7 +410,7 @@ class Tapper {
                 // Re-assign profile data
                 profile_data = await this.api.get_user_data(http_client);
                 logger.info(
-                  `${this.session_name} | 🎉 Claimed friends reward <gr>+${friend_reward_response?.claimBalance}</gr> | Balance: <lb>${profile_data?.availableBalance}</lb>`
+                  `<ye>[${this.bot_name}]</ye> | ${this.session_name} | 🎉 Claimed friends reward <gr>+${friend_reward_response?.claimBalance}</gr> | Balance: <lb>${profile_data?.availableBalance}</lb>`
                 );
               }
             }
@@ -363,11 +424,13 @@ class Tapper {
           if (settings.CLAIM_DAILY_REWARD) {
             const daily_reward = await this.api.daily_reward(http_client);
             if (daily_reward) {
-              logger.info(`${this.session_name} | 🎉 Claimed daily reward`);
+              logger.info(
+                `<ye>[${this.bot_name}]</ye> | ${this.session_name} | 🎉 Claimed daily reward`
+              );
             } else {
               sleep_reward = currentTime + 18000;
               logger.info(
-                `${
+                `<ye>[${this.bot_name}]</ye> | ${
                   this.session_name
                 } | ⏰ Daily reward not available. Next check: <b><lb>${new Date(
                   sleep_reward * 1000
@@ -377,10 +440,12 @@ class Tapper {
           }
         }
       } catch (error) {
-        logger.error(`${this.session_name} | ❗️Unknown error: ${error}`);
+        logger.error(
+          `<ye>[${this.bot_name}]</ye> | ${this.session_name} | ❗️Unknown error: ${error}`
+        );
       } finally {
         logger.info(
-          `${this.session_name} | 😴 sleeping for ${settings.SLEEP_BETWEEN_TAP} seconds...`
+          `<ye>[${this.bot_name}]</ye> | ${this.session_name} | 😴 sleeping for ${settings.SLEEP_BETWEEN_TAP} seconds...`
         );
         await sleep(settings.SLEEP_BETWEEN_TAP);
       }

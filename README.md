@@ -6,18 +6,19 @@
 
 ## Functionality
 
-| Functional                       | Supported |
-| -------------------------------- | :-------: |
-| Claiming daily reward            |    ✅     |
-| Claiming Farming reward          |    ✅     |
-| Claiming Friends reward          |    ✅     |
-| Starting Farming                 |    ✅     |
-| Playing games                    |    ✅     |
-| Multithreading                   |    ✅     |
-| Binding a proxy to a session     |    ✅     |
-| Random sleep time between clicks |    ✅     |
+| Functional                            | Supported |
+| ------------------------------------- | :-------: |
+| Claiming daily reward                 |    ✅     |
+| Claiming Farming reward               |    ✅     |
+| Claiming Friends reward               |    ✅     |
+| Starting Farming                      |    ✅     |
+| Playing games                         |    ✅     |
+| Multithreading                        |    ✅     |
+| Using a session/query_id              |    ✅     |
+| Binding a proxy to a session/query_id |    ✅     |
+| Random sleep time between clicks      |    ✅     |
 
-## [How to add query id](https://github.com/Freddywhest/RockyRabbitBot/blob/main/AddQueryId.md)
+### [How to add query id](https://github.com/Freddywhest/RockyRabbitBot/blob/main/AddQueryId.md)
 
 ## [Settings](https://github.com/FreddyWhest/BlumBot/blob/main/.env-example)
 
@@ -32,6 +33,7 @@
 | **AUTO_JOIN_TRIBE**           | Whether the bot should join tribe [Freddy_bots] (True / False)            |
 | **SLEEP_BETWEEN_TAP**         | Delay between taps in seconds (eg. 70)                                    |
 | **USE_PROXY_FROM_FILE**       | Whether to use proxy from the `bot/config/proxies.js` file (True / False) |
+| **USE_QUERY_ID**              | Whether to query_id instead of sessions (True / False)                    |
 
 ## Installation
 
