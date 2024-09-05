@@ -204,7 +204,7 @@ class Tapper {
   async #get_access_token(tgWebData, http_client) {
     try {
       const response = await http_client.post(
-        `${app.gatewayApiUrl}/v1/auth/provider/PROVIDER_TELEGRAM_MINI_APP`,
+        `${app.gatewayApiUrl}/api/v1/auth/provider/PROVIDER_TELEGRAM_MINI_APP`,
         JSON.stringify(tgWebData)
       );
 
@@ -261,6 +261,7 @@ class Tapper {
     let profile_data;
     let sleep_reward = 0;
     let access_token;
+    let tasks = [];
 
     if (settings.USE_PROXY_FROM_FILE && proxy) {
       http_client = axios.create({
@@ -316,6 +317,36 @@ class Tapper {
           access_token_created_time = 0;
           continue;
         }
+
+        // Daily reward
+        if (currentTime >= sleep_reward) {
+          if (settings.CLAIM_DAILY_REWARD) {
+            const daily_reward = await this.api.daily_reward(http_client);
+            if (daily_reward) {
+              logger.info(
+                `<ye>[${this.bot_name}]</ye> | ${this.session_name} | 🎉 Claimed daily reward`
+              );
+            } else {
+              sleep_reward = currentTime + 18000;
+              logger.info(
+                `<ye>[${this.bot_name}]</ye> | ${
+                  this.session_name
+                } | ⏰ Daily reward not available. Next check: <b><lb>${new Date(
+                  sleep_reward * 1000
+                )}</lb></b>`
+              );
+            }
+          }
+        }
+
+        if (settings.CLAIM_TASKS_REWARD) {
+          logger.info(
+            `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Claiming of tasks is not available for everyone yet. <br /> Set <b><la>CLAIM_TASKS_REWARD=False</la></b> to disable this message.`
+          );
+        }
+
+        // Sleep
+        await sleep(3);
 
         // Tribe
         if (settings.AUTO_JOIN_TRIBE) {
@@ -429,29 +460,6 @@ class Tapper {
                   `<ye>[${this.bot_name}]</ye> | ${this.session_name} | 🎉 Claimed friends reward <gr>+${friend_reward_response?.claimBalance}</gr> | Balance: <lb>${profile_data?.availableBalance}</lb>`
                 );
               }
-            }
-          }
-        }
-        // Sleep
-        await sleep(3);
-
-        // Daily reward
-        if (currentTime >= sleep_reward) {
-          if (settings.CLAIM_DAILY_REWARD) {
-            const daily_reward = await this.api.daily_reward(http_client);
-            if (daily_reward) {
-              logger.info(
-                `<ye>[${this.bot_name}]</ye> | ${this.session_name} | 🎉 Claimed daily reward`
-              );
-            } else {
-              sleep_reward = currentTime + 18000;
-              logger.info(
-                `<ye>[${this.bot_name}]</ye> | ${
-                  this.session_name
-                } | ⏰ Daily reward not available. Next check: <b><lb>${new Date(
-                  sleep_reward * 1000
-                )}</lb></b>`
-              );
             }
           }
         }

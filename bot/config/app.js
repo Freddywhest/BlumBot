@@ -1,6 +1,7 @@
 const app = {
   version: "1.0.0",
-  gatewayApiUrl: "https://gateway.blum.codes",
+  gatewayApiUrl: "https://user-domain.blum.codes",
+  tribeApiUrl: "https://tribe-domain.blum.codes",
   gameApiUrl: "https://game-domain.blum.codes",
   gatewayHost: "gateway.blum.codes",
   gameHost: "game-domain.blum.codes",

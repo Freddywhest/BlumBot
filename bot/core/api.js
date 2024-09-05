@@ -38,7 +38,7 @@ class ApiRequest {
   async daily_reward(http_client) {
     try {
       const response = await http_client.post(
-        `${app.gameApiUrl}/api/v1/daily-reward?offset=10`
+        `${app.gameApiUrl}/api/v1/daily-reward?offset=0`
       );
       return response.data == "OK";
     } catch (error) {
@@ -59,7 +59,7 @@ class ApiRequest {
   async get_friend_balance(http_client) {
     try {
       const response = await http_client.get(
-        `${app.gatewayApiUrl}/v1/friends/balance`
+        `${app.gatewayApiUrl}/api/v1/friends/balance`
       );
       return response.data;
     } catch (error) {
@@ -77,7 +77,7 @@ class ApiRequest {
   async claim_friends_balance(http_client) {
     try {
       const response = await http_client.post(
-        `${app.gatewayApiUrl}/v1/friends/claim`
+        `${app.gatewayApiUrl}/api/v1/friends/claim`
       );
       return response.data;
     } catch (error) {
@@ -192,7 +192,7 @@ class ApiRequest {
   async refresh_token(http_client, data) {
     try {
       const response = await http_client.post(
-        `${app.gatewayApiUrl}/v1/auth/refresh`,
+        `${app.gatewayApiUrl}/api/v1/auth/refresh`,
         JSON.stringify(data)
       );
       return response.data;
@@ -211,7 +211,9 @@ class ApiRequest {
 
   async check_jwt(http_client) {
     try {
-      const response = await http_client.get(`${app.gatewayApiUrl}/v1/user/me`);
+      const response = await http_client.get(
+        `${app.gatewayApiUrl}/api/v1/user/me`
+      );
       return response.data?.username ? true : false;
     } catch (error) {
       if (error?.response?.data?.message && error?.response?.data?.code == 16) {
@@ -230,7 +232,7 @@ class ApiRequest {
   async get_tribes(http_client) {
     try {
       const response = await http_client.get(
-        `${app.gameApiUrl}/api/v1/tribe?search=Freddy_bots`
+        `${app.tribeApiUrl}/api/v1/tribe?search=Freddy_bots`
       );
       return response.data;
     } catch (error) {
@@ -250,7 +252,7 @@ class ApiRequest {
   async join_tribe(http_client, tribe_id) {
     try {
       const response = await http_client.post(
-        `${app.gameApiUrl}/api/v1/tribe/${tribe_id}/join`
+        `${app.tribeApiUrl}/api/v1/tribe/${tribe_id}/join`
       );
       return response.data;
     } catch (error) {
@@ -268,17 +270,17 @@ class ApiRequest {
 
   async check_my_tribe(http_client) {
     try {
-      await http_client.get(`${app.gameApiUrl}/api/v1/tribe/my`);
+      await http_client.get(`${app.tribeApiUrl}/api/v1/tribe/my`);
       return true;
     } catch (error) {
       if (
-        error?.response?.data?.message &&
-        error?.response?.data?.message?.includes("not find")
+        error?.response?.data?.canCreateTribe &&
+        error?.response?.data?.canCreateTribe == true
       ) {
-        return true;
+        return false;
       } else if (
         error?.response?.data?.message &&
-        !error?.response?.data?.message?.includes("not find")
+        !error?.response?.data?.message?.includes("NOT_FOUND")
       ) {
         logger.warning(
           `<ye>[${this.bot_name}]</ye> | ${this.session_name} | ⚠️ Error while <b>checking my tribe:</b> ${error?.response?.data?.message}`

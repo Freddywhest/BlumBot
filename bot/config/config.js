@@ -45,6 +45,10 @@ const settings = {
   AUTO_JOIN_TRIBE: process.env.AUTO_JOIN_TRIBE
     ? process.env.AUTO_JOIN_TRIBE.toLowerCase() === "true"
     : true,
+
+  CLAIM_TASKS_REWARD: process.env.CLAIM_TASKS_REWARD
+    ? process.env.CLAIM_TASKS_REWARD.toLowerCase() === "true"
+    : false,
 };
 
 module.exports = settings;

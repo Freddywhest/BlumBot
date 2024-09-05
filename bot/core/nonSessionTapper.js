@@ -102,22 +102,24 @@ class NonSessionTapper {
   async #get_access_token(tgWebData, http_client) {
     try {
       const response = await http_client.post(
-        `${app.gatewayApiUrl}/v1/auth/provider/PROVIDER_TELEGRAM_MINI_APP`,
+        `${app.gatewayApiUrl}/api/v1/auth/provider/PROVIDER_TELEGRAM_MINI_APP`,
         JSON.stringify(tgWebData)
       );
 
       return response.data?.token;
     } catch (error) {
-      if (error?.response?.data?.message) {
+      if (error?.response?.status > 499) {
         logger.error(
-          `<ye>[${this.bot_name}]</ye> | ${this.session_name} | ⚠️ Error while getting Access Token: ${error?.response?.data?.message}`
+          `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Server Error, retrying again after sleep...`
         );
+        await sleep(1);
+        return null;
       } else {
         logger.error(
           `<ye>[${this.bot_name}]</ye> | ${this.session_name} | ❗️Unknown error while getting Access Token: ${error}`
         );
+        await sleep(3); // 3 seconds delay
       }
-      await sleep(3); // 3 seconds delay
     }
   }
 
@@ -157,6 +159,7 @@ class NonSessionTapper {
     let profile_data;
     let sleep_reward = 0;
     let access_token;
+    let tasks = [];
 
     if (settings.USE_PROXY_FROM_FILE && proxy) {
       http_client = axios.create({
@@ -194,17 +197,10 @@ class NonSessionTapper {
         const time = await this.api.get_time(http_client);
         const checkJWT = await this.api.check_jwt(http_client);
 
-        if (!checkJWT) {
-          logger.info(
-            `<ye>[${this.bot_name}]</ye> | ${this.session_name} | JWT token has expired. Trying to refresh...`
-          );
+        if (!checkJWT || !profile_data) {
           profile_data = null;
           access_token = null;
           access_token_created_time = 0;
-          continue;
-        }
-
-        if (!profile_data) {
           continue;
         }
 
@@ -229,7 +225,14 @@ class NonSessionTapper {
           }
         }
 
-        await sleep(2);
+        if (settings.CLAIM_TASKS_REWARD) {
+          logger.info(
+            `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Claiming of tasks is not available for everyone yet. <br /> Set <b><la>CLAIM_TASKS_REWARD=False</la></b> to disable this message.`
+          );
+        }
+
+        // Sleep
+        await sleep(3);
 
         // Tribe
         if (settings.AUTO_JOIN_TRIBE) {
@@ -244,27 +247,11 @@ class NonSessionTapper {
               logger.info(
                 `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Joined tribe: <lb>${get_tribes?.items[0].chatname}</lb>`
               );
-            } else {
-              logger.info(
-                `<ye>[${this.bot_name}]</ye> | ${this.session_name} | No tribe to join`
-              );
             }
           }
         }
 
-        // Farming
-        if (!profile_data?.farming) {
-          if (settings.AUTO_START_FARMING) {
-            const farm_response = await this.api.start_farming(http_client);
-            logger.info(
-              `<ye>[${this.bot_name}]</ye> | ${
-                this.session_name
-              } | Farming started  | End Time: <la>${new Date(
-                farm_response?.endTime
-              )}</la> | Earnings Rate: <pi>${farm_response?.earningsRate}</pi>`
-            );
-          }
-        } else if (time?.now >= profile_data?.farming?.endTime) {
+        if (time?.now >= profile_data?.farming?.endTime) {
           if (settings.AUTO_CLAIM_FARMING_REWARD) {
             logger.info(
               `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Claiming farming reward...`
@@ -285,6 +272,20 @@ class NonSessionTapper {
           );
         }
 
+        // Farming
+        if (!profile_data?.farming) {
+          if (settings.AUTO_START_FARMING) {
+            const farm_response = await this.api.start_farming(http_client);
+            logger.info(
+              `<ye>[${this.bot_name}]</ye> | ${
+                this.session_name
+              } | Farming started  | End Time: <la>${new Date(
+                farm_response?.endTime
+              )}</la> | Earnings Rate: <pi>${farm_response?.earningsRate}</pi>`
+            );
+          }
+        }
+
         // Sleep
         await sleep(3);
 
@@ -293,6 +294,7 @@ class NonSessionTapper {
         if (settings.AUTO_PLAY_GAMES) {
           // Game
           while (profile_data?.playPasses > 0) {
+            profile_data = await this.api.get_user_data(http_client);
             logger.info(
               `<ye>[${this.bot_name}]</ye> | ${this.session_name} | sleeping for 20 seconds before starting game...`
             );
@@ -300,7 +302,7 @@ class NonSessionTapper {
             const game_response = await this.api.start_game(http_client);
             if (game_response?.gameId) {
               logger.info(
-                `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Game started  | Duration: <la> 35 seconds</la>`
+                `<ye>[${this.bot_name}]</ye> | ${this.session_name} | 🎲  Game started | Duration: <la> 35 seconds</la>`
               );
               await sleep(35);
               const points = _.random(100, 200);
@@ -317,7 +319,7 @@ class NonSessionTapper {
               profile_data = await this.api.get_user_data(http_client);
               if (game_reward.toLowerCase() == "ok") {
                 logger.info(
-                  `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Game ended  | Earnings: <gr>+${points}</gr> Blum points | Available Play Passes: <ye>${profile_data?.playPasses}</ye> | Balance: <lb>${profile_data?.availableBalance}</lb>`
+                  `<ye>[${this.bot_name}]</ye> | ${this.session_name} | 🎲  Game ended  | Earnings: <gr>+${points}</gr> Blum points | Available Play Passes: <ye>${profile_data?.playPasses}</ye> | Balance: <lb>${profile_data?.availableBalance}</lb>`
                 );
               }
             }
