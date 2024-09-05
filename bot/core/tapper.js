@@ -154,6 +154,12 @@ class Tapper {
 
       return json;
     } catch (error) {
+      if (error.message.includes("AUTH_KEY_DUPLICATED")) {
+        logger.error(
+          `<ye>[${this.bot_name}]</ye> | ${this.session_name} | The same authorization key (session file) was used in more than one place simultaneously. You must delete your session file and create a new session`
+        );
+        return null;
+      }
       const regex = /A wait of (\d+) seconds/;
       if (
         error.message.includes("FloodWaitError") ||
@@ -280,6 +286,14 @@ class Tapper {
         const currentTime = Date.now() / 1000;
         if (currentTime - access_token_created_time >= 1800) {
           const tg_web_data = await this.#get_tg_web_data();
+          if (
+            _.isNull(tg_web_data) ||
+            _.isUndefined(tg_web_data) ||
+            !tg_web_data ||
+            _.isEmpty(tg_web_data)
+          ) {
+            continue;
+          }
 
           access_token = await this.#get_access_token(tg_web_data, http_client);
           if (!access_token) {
@@ -320,19 +334,7 @@ class Tapper {
           }
         }
 
-        // Farming
-        if (!profile_data?.farming) {
-          if (settings.AUTO_START_FARMING) {
-            const farm_response = await this.api.start_farming(http_client);
-            logger.info(
-              `<ye>[${this.bot_name}]</ye> | ${
-                this.session_name
-              } | Farming started  | End Time: <la>${new Date(
-                farm_response?.endTime
-              )}</la> | Earnings Rate: <pi>${farm_response?.earningsRate}</pi>`
-            );
-          }
-        } else if (time?.now >= profile_data?.farming?.endTime) {
+        if (time?.now >= profile_data?.farming?.endTime) {
           if (settings.AUTO_CLAIM_FARMING_REWARD) {
             logger.info(
               `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Claiming farming reward...`
@@ -351,6 +353,20 @@ class Tapper {
               (profile_data?.farming?.endTime - time?.now) / 1000 / 60 / 60
             )} hour(s)`
           );
+        }
+
+        // Farming
+        if (!profile_data?.farming) {
+          if (settings.AUTO_START_FARMING) {
+            const farm_response = await this.api.start_farming(http_client);
+            logger.info(
+              `<ye>[${this.bot_name}]</ye> | ${
+                this.session_name
+              } | Farming started  | End Time: <la>${new Date(
+                farm_response?.endTime
+              )}</la> | Earnings Rate: <pi>${farm_response?.earningsRate}</pi>`
+            );
+          }
         }
 
         // Sleep
