@@ -1,4 +1,5 @@
 require("dotenv").config();
+const _isArray = require("../utils/_isArray");
 const settings = {
   API_ID:
     process.env.API_ID && /^\d+$/.test(process.env.API_ID)
@@ -29,9 +30,12 @@ const settings = {
     : true,
 
   SLEEP_BETWEEN_TAP:
-    process.env.SLEEP_BETWEEN_TAP && /^\d+$/.test(process.env.SLEEP_BETWEEN_TAP)
+    process.env.SLEEP_BETWEEN_TAP && _isArray(process.env.SLEEP_BETWEEN_TAP)
+      ? JSON.parse(process.env.SLEEP_BETWEEN_TAP)
+      : process.env.SLEEP_BETWEEN_TAP &&
+        /^\d+$/.test(process.env.SLEEP_BETWEEN_TAP)
       ? parseInt(process.env.SLEEP_BETWEEN_TAP)
-      : 70,
+      : 150,
 
   USE_PROXY_FROM_FILE: process.env.USE_PROXY_FROM_FILE
     ? process.env.USE_PROXY_FROM_FILE.toLowerCase() === "true"
