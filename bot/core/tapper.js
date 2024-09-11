@@ -134,6 +134,7 @@ class Tapper {
           );
         }
       }
+      await sleep(10);
       const result = await this.tg_client.invoke(
         new Api.messages.RequestWebView({
           peer: await this.tg_client.getInputEntity(app.peer),
@@ -145,12 +146,9 @@ class Tapper {
       );
       const authUrl = result.url;
       const tgWebData = authUrl.split("#", 2)[1];
-      const data = parser.toJson(
-        decodeURIComponent(this.#clean_tg_web_data(tgWebData))
-      );
 
       const json = {
-        query: parser.toQueryString(data),
+        query: decodeURIComponent(this.#clean_tg_web_data(tgWebData)),
       };
 
       return json;
