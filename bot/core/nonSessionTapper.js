@@ -1,7 +1,6 @@
 const { default: axios } = require("axios");
 const logger = require("../utils/logger");
 const headers = require("./header");
-const { SocksProxyAgent } = require("socks-proxy-agent");
 const settings = require("../config/config");
 const app = require("../config/app");
 const user_agents = require("../config/userAgents");
@@ -11,6 +10,8 @@ const ApiRequest = require("./api");
 var _ = require("lodash");
 const path = require("path");
 const _isArray = require("../utils/_isArray");
+const Fetchers = require("../utils/fetchers");
+const { HttpsProxyAgent } = require("https-proxy-agent");
 
 class NonSessionTapper {
   constructor(query_id, query_name) {
@@ -19,7 +20,7 @@ class NonSessionTapper {
     this.query_id = query_id;
     this.session_user_agents = this.#load_session_data();
     this.headers = { ...headers, "user-agent": this.#get_user_agent() };
-    this.api = new ApiRequest(this.session_name);
+    this.api = new ApiRequest(this.session_name, this.bot_name);
   }
 
   #load_session_data() {
@@ -65,11 +66,11 @@ class NonSessionTapper {
       if (!proxy) return null;
       let proxy_url;
       if (!proxy.password && !proxy.username) {
-        proxy_url = `socks${proxy.socksType}://${proxy.ip}:${proxy.port}`;
+        proxy_url = `${proxy.protocol}://${proxy.ip}:${proxy.port}`;
       } else {
-        proxy_url = `socks${proxy.socksType}://${proxy.username}:${proxy.password}@${proxy.ip}:${proxy.port}`;
+        proxy_url = `${proxy.protocol}://${proxy.username}:${proxy.password}@${proxy.ip}:${proxy.port}`;
       }
-      return new SocksProxyAgent(proxy_url);
+      return new HttpsProxyAgent(proxy_url);
     } catch (e) {
       logger.error(
         `<ye>[${this.bot_name}]</ye> | ${
@@ -99,60 +100,6 @@ class NonSessionTapper {
       );
     }
   }
-
-  async #get_access_token(tgWebData, http_client) {
-    try {
-      const response = await http_client.post(
-        `${app.gatewayApiUrl}/api/v1/auth/provider/PROVIDER_TELEGRAM_MINI_APP`,
-        JSON.stringify(tgWebData)
-      );
-
-      return response.data?.token;
-    } catch (error) {
-      if (error?.response?.status > 499) {
-        logger.error(
-          `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Server Error, retrying again after sleep...`
-        );
-        await sleep(1);
-        return null;
-      } else {
-        logger.error(
-          `<ye>[${this.bot_name}]</ye> | ${this.session_name} | ❗️Unknown error while getting Access Token: ${error}`
-        );
-        await sleep(3); // 3 seconds delay
-      }
-    }
-  }
-
-  async #check_proxy(http_client, proxy) {
-    try {
-      const response = await http_client.get("https://httpbin.org/ip");
-      const ip = response.data.origin;
-      logger.info(
-        `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Proxy IP: ${ip}`
-      );
-    } catch (error) {
-      if (
-        error.message.includes("ENOTFOUND") ||
-        error.message.includes("getaddrinfo") ||
-        error.message.includes("ECONNREFUSED")
-      ) {
-        logger.error(
-          `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Error: Unable to resolve the proxy address. The proxy server at ${proxy.ip}:${proxy.port} could not be found. Please check the proxy address and your network connection.`
-        );
-        logger.error(
-          `<ye>[${this.bot_name}]</ye> | ${this.session_name} | No proxy will be used.`
-        );
-      } else {
-        logger.error(
-          `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Proxy: ${proxy.ip}:${proxy.port} | Error: ${error.message}`
-        );
-      }
-
-      return false;
-    }
-  }
-
   async run(proxy) {
     let http_client;
     let access_token_created_time = 0;
@@ -162,13 +109,15 @@ class NonSessionTapper {
     let access_token;
     let tasks = [];
 
+    const fetchers = new Fetchers(this.api, this.session_name, this.bot_name);
+
     if (settings.USE_PROXY_FROM_FILE && proxy) {
       http_client = axios.create({
         httpsAgent: this.#proxy_agent(proxy),
         headers: this.headers,
         withCredentials: true,
       });
-      const proxy_result = await this.#check_proxy(http_client, proxy);
+      const proxy_result = await fetchers.check_proxy(http_client, proxy);
       if (!proxy_result) {
         http_client = axios.create({
           headers: this.headers,
@@ -186,7 +135,22 @@ class NonSessionTapper {
         const currentTime = Date.now() / 1000;
         if (currentTime - access_token_created_time >= 1800) {
           const tg_web_data = await this.#get_tg_web_data();
-          access_token = await this.#get_access_token(tg_web_data, http_client);
+          if (
+            _.isNull(tg_web_data) ||
+            _.isUndefined(tg_web_data) ||
+            !tg_web_data ||
+            _.isEmpty(tg_web_data)
+          ) {
+            continue;
+          }
+
+          access_token = await fetchers.get_access_token(
+            tg_web_data,
+            http_client
+          );
+          if (!access_token) {
+            continue;
+          }
           http_client.defaults.headers[
             "authorization"
           ] = `Bearer ${access_token?.access}`;
@@ -194,9 +158,10 @@ class NonSessionTapper {
           await sleep(2);
         }
 
-        profile_data = await this.api.get_user_data(http_client);
+        profile_data = await fetchers.fetch_user_data(http_client);
         const time = await this.api.get_time(http_client);
         const checkJWT = await this.api.check_jwt(http_client);
+        tasks = await fetchers.fetch_tasks(http_client);
 
         if (!checkJWT || !profile_data) {
           profile_data = null;
@@ -204,6 +169,12 @@ class NonSessionTapper {
           access_token_created_time = 0;
           continue;
         }
+        // Get latest profile data after the game
+        logger.info(
+          `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Available Play Passes: <ye>${profile_data?.playPasses}</ye> | Balance: <lb>${profile_data?.availableBalance}</lb>`
+        );
+
+        await sleep(2);
 
         // Daily reward
         if (currentTime >= sleep_reward) {
@@ -227,9 +198,10 @@ class NonSessionTapper {
         }
 
         if (settings.CLAIM_TASKS_REWARD) {
-          logger.info(
+          /* logger.info(
             `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Claiming of tasks is not available for everyone yet. <br /> Set <b><la>CLAIM_TASKS_REWARD=False</la></b> to disable this message.`
-          );
+          ); */
+          await fetchers.handle_task(http_client, tasks);
         }
 
         // Sleep
@@ -253,37 +225,27 @@ class NonSessionTapper {
         }
 
         if (time?.now >= profile_data?.farming?.endTime) {
+          await sleep(3);
           if (settings.AUTO_CLAIM_FARMING_REWARD) {
             logger.info(
               `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Claiming farming reward...`
             );
-            const farm_reward = await this.api.claim_farming(http_client);
-            logger.info(
-              `<ye>[${this.bot_name}]</ye> | ${this.session_name} | 🎉 Claimed farming reward | Balance <lb>${farm_reward?.availableBalance}</lb> | Available Play Pass <ye>${farm_reward?.playPasses}</ye>`
-            );
+            await fetchers.claim_farming_reward(http_client);
           }
         } else if (time?.now >= profile_data?.farming?.startTime) {
-          // in hours
+          const remainingHours = Math.floor(
+            (profile_data?.farming?.endTime - time?.now) / 1000 / 60 / 60
+          );
           logger.info(
-            `<ye>[${this.bot_name}]</ye> | ${
-              this.session_name
-            } | Farming ends in ${Math.floor(
-              (profile_data?.farming?.endTime - time?.now) / 1000 / 60 / 60
-            )} hour(s)`
+            `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Farming ends in ${remainingHours} hour(s)`
           );
         }
 
         // Farming
         if (!profile_data?.farming) {
+          await sleep(2);
           if (settings.AUTO_START_FARMING) {
-            const farm_response = await this.api.start_farming(http_client);
-            logger.info(
-              `<ye>[${this.bot_name}]</ye> | ${
-                this.session_name
-              } | Farming started  | End Time: <la>${new Date(
-                farm_response?.endTime
-              )}</la> | Earnings Rate: <pi>${farm_response?.earningsRate}</pi>`
-            );
+            await fetchers.start_farming(http_client);
           }
         }
 
@@ -291,40 +253,10 @@ class NonSessionTapper {
         await sleep(3);
 
         // Re-assign profile data
-        profile_data = await this.api.get_user_data(http_client);
-        if (settings.AUTO_PLAY_GAMES) {
-          // Game
-          while (profile_data?.playPasses > 0) {
-            profile_data = await this.api.get_user_data(http_client);
-            logger.info(
-              `<ye>[${this.bot_name}]</ye> | ${this.session_name} | sleeping for 20 seconds before starting game...`
-            );
-            await sleep(20);
-            const game_response = await this.api.start_game(http_client);
-            if (game_response?.gameId) {
-              logger.info(
-                `<ye>[${this.bot_name}]</ye> | ${this.session_name} | 🎲  Game started | Duration: <la> 35 seconds</la>`
-              );
-              await sleep(35);
-              const points = _.random(100, 200);
-              const data = {
-                gameId: game_response?.gameId,
-                points: points,
-              };
-              const game_reward = await this.api.claim_game_reward(
-                http_client,
-                data
-              );
+        profile_data = await fetchers.fetch_user_data(http_client);
 
-              // Re-assign profile data
-              profile_data = await this.api.get_user_data(http_client);
-              if (game_reward.toLowerCase() == "ok") {
-                logger.info(
-                  `<ye>[${this.bot_name}]</ye> | ${this.session_name} | 🎲  Game ended  | Earnings: <gr>+${points}</gr> Blum points | Available Play Passes: <ye>${profile_data?.playPasses}</ye> | Balance: <lb>${profile_data?.availableBalance}</lb>`
-                );
-              }
-            }
-          }
+        if (settings.AUTO_PLAY_GAMES) {
+          await fetchers.handle_game(http_client);
         }
 
         // Sleep
@@ -342,7 +274,7 @@ class NonSessionTapper {
                 await this.api.claim_friends_balance(http_client);
               if (friend_reward_response?.claimBalance) {
                 // Re-assign profile data
-                profile_data = await this.api.get_user_data(http_client);
+                profile_data = await fetchers.fetch_user_data(http_client);
                 logger.info(
                   `<ye>[${this.bot_name}]</ye> | ${this.session_name} | 🎉 Claimed friends reward <gr>+${friend_reward_response?.claimBalance}</gr> | Balance: <lb>${profile_data?.availableBalance}</lb>`
                 );

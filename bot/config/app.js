@@ -3,6 +3,7 @@ const app = {
   gatewayApiUrl: "https://user-domain.blum.codes",
   tribeApiUrl: "https://tribe-domain.blum.codes",
   gameApiUrl: "https://game-domain.blum.codes",
+  earnApiUrl: "https://earn-domain.blum.codes",
   gatewayHost: "gateway.blum.codes",
   gameHost: "game-domain.blum.codes",
   peer: "BlumCryptoBot",

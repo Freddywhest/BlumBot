@@ -11,6 +11,7 @@
 | Claiming daily reward                 |    ✅     |
 | Claiming Farming reward               |    ✅     |
 | Claiming Friends reward               |    ✅     |
+| Claiming tasks                        |    ✅     |
 | Starting Farming                      |    ✅     |
 | Playing games                         |    ✅     |
 | Multithreading                        |    ✅     |
@@ -27,6 +28,7 @@
 | **API_ID / API_HASH**         | Platform data from which to launch a Telegram session (stock - Android)   |
 | **CLAIM_DAILY_REWARD**        | Whether the bot should Claim daily rewards (True / False)                 |
 | **CLAIM_FRIENDS_REWARD**      | Whether the bot should Claim friends rewards (True / False)               |
+| **CLAIM_TASKS_REWARD**        | Whether the bot should Claim tasks (True / False)                         |
 | **AUTO_PLAY_GAMES**           | Whether the bot should play blum game and claim reward (True / False)     |
 | **AUTO_START_FARMING**        | Whether the bot should start farming (True / False)                       |
 | **AUTO_CLAIM_FARMING_REWARD** | Whether the bot should claim farming rewards(True / False)                |

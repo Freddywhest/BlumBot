@@ -20,3 +20,6 @@ Push.bat
 
 # Ignore all files ending with .session
 *.session
+
+cache/
+tmp/

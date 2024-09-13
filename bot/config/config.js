@@ -51,7 +51,7 @@ const settings = {
 
   CLAIM_TASKS_REWARD: process.env.CLAIM_TASKS_REWARD
     ? process.env.CLAIM_TASKS_REWARD.toLowerCase() === "true"
-    : false,
+    : true,
 };
 
 module.exports = settings;

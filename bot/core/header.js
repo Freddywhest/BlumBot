@@ -11,6 +11,8 @@ const headers = {
   "user-agent":
     "Mozilla/5.0 (iPhone; CPU iPhone OS 17_5_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148",
   "sec-fetch-dest": "empty",
+  "x-requested-with": "org.telegram.messenger.web",
+  priority: "u=1, i",
 };
 
 module.exports = headers;
