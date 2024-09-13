@@ -85,15 +85,26 @@ class Fetchers {
     while (typeof profile_data == "boolean" && !profile_data) {
       await sleep(2);
       profile_data = await this.api.get_user_data(http_client);
-      if (_.isNull(profile_data) || _.isEmpty(profile_data)) {
+      if (!_.isNull(profile_data) && !_.isEmpty(profile_data)) {
+        return profile_data;
+      }
+
+      if (profile_data == false) {
         logger.warning(
           `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Failed to get user data. Retrying again...`
         );
-        profile_data = false;
-        await sleep(3);
+        await sleep(5);
+        continue;
+      }
+
+      if (_.isNull(profile_data)) {
+        logger.warning(
+          `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Error while getting user data. Aborting...`
+        );
+        break;
       }
     }
-    return profile_data;
+    return null;
   }
 
   async fetch_tasks(http_client) {
@@ -101,15 +112,26 @@ class Fetchers {
     while (typeof tasks == "boolean" && !tasks) {
       await sleep(2);
       tasks = await this.api.get_tasks(http_client);
-      if (_.isNull(tasks) || _.isEmpty(tasks)) {
+      if (!_.isNull(tasks) && !_.isEmpty(tasks)) {
+        return this.#filter_tasks(tasks);
+      }
+
+      if (tasks == false) {
         logger.warning(
           `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Failed to get tasks. Retrying again...`
         );
-        tasks = false;
-        await sleep(3);
+        await sleep(5);
+        continue;
+      }
+
+      if (_.isNull(tasks)) {
+        logger.warning(
+          `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Error while getting tasks. Aborting...`
+        );
+        break;
       }
     }
-    return this.#filter_tasks(tasks);
+    return null;
   }
 
   async #start_tasks(http_client, task_id, task_name) {
@@ -117,15 +139,25 @@ class Fetchers {
     while (typeof tasks_data == "boolean" && !tasks_data) {
       await sleep(2);
       tasks_data = await this.api.start_task(http_client, task_id);
-      if (_.isNull(tasks_data) || _.isEmpty(tasks_data)) {
+      if (!_.isNull(tasks_data) && !_.isEmpty(tasks_data)) {
+        return tasks_data;
+      }
+      if (tasks_data == false) {
         logger.warning(
           `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Failed to start task <la>${task_name}</la>. Retrying again...`
         );
-        tasks_data = false;
-        await sleep(3);
+        await sleep(5);
+        continue;
+      }
+
+      if (_.isNull(tasks_data)) {
+        logger.error(
+          `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Error while starting task <la>${task_name}</la>. Aborting...`
+        );
+        break;
       }
     }
-    return tasks_data;
+    return null;
   }
 
   async #claim_tasks(http_client, task_id, task_name) {
@@ -137,100 +169,192 @@ class Fetchers {
       // Check if tasks_data is a string and contains "Task is already claimed"
       if (
         typeof tasks_data === "string" &&
-        tasks_data?.toLowerCase()?.includes("Task is already claimed")
+        tasks_data?.toLowerCase()?.includes("task is already claimed")
       ) {
         logger.info(
           `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Task <la>${task_name}</la> is already claimed. Stopping retry.`
         );
         break; // Exit the loop if the task is already claimed
       }
+      // Successful claim
+      if (!_.isNull(tasks_data) && !_.isEmpty(tasks_data)) {
+        return tasks_data;
+      }
 
-      if (_.isNull(tasks_data) || _.isEmpty(tasks_data)) {
+      // Retry on server errors (status >= 500)
+      if (tasks_data === false) {
         logger.warning(
           `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Failed to claim task <la>${task_name}</la>. Retrying again...`
         );
-        tasks_data = false;
-        await sleep(3);
+        await sleep(5);
+        continue;
+      }
+
+      if (_.isNull(tasks_data)) {
+        logger.warning(
+          `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Error while claiming task. Exiting...`
+        );
+        break;
       }
     }
-    return tasks_data;
+    return null;
   }
 
   async claim_farming_reward(http_client) {
     let farm_reward = false;
+
     while (typeof farm_reward === "boolean" && !farm_reward) {
-      await sleep(2);
+      await sleep(2); // Add delay before each retry
+
       farm_reward = await this.api.claim_farming(http_client);
 
+      // Successful claim
       if (!_.isNull(farm_reward) && !_.isEmpty(farm_reward)) {
         logger.info(
           `<ye>[${this.bot_name}]</ye> | ${this.session_name} | 🎉 Claimed farming reward | Balance <lb>${farm_reward?.availableBalance}</lb> | Available Play Pass <ye>${farm_reward?.playPasses}</ye>`
         );
-      } else {
+        return farm_reward; // Exit the loop as reward was claimed successfully
+      }
+
+      // Retry on server errors (status >= 500)
+      if (farm_reward === false) {
         logger.warning(
           `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Failed to claim farming reward. Retrying again...`
         );
-        farm_reward = false;
-        await sleep(3);
+        await sleep(5); // Wait before retrying
+        continue;
+      }
+
+      // Exit on non-retryable error (if an error message is returned)
+      if (farm_reward === null) {
+        logger.error(
+          `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Error while claiming farming reward. Exiting...`
+        );
+        break; // Exit loop on unknown or non-retryable errors
       }
     }
+
+    return null; // Return null if claiming the reward failed
   }
 
   async start_farming(http_client) {
     let farm_response = false;
+
     while (typeof farm_response === "boolean" && !farm_response) {
       farm_response = await this.api.start_farming(http_client);
+
+      // Check if the farm response was successful
       if (!_.isNull(farm_response) && !_.isEmpty(farm_response)) {
         logger.info(
           `<ye>[${this.bot_name}]</ye> | ${
             this.session_name
-          } | Farming started  | End Time: <la>${new Date(
+          } | Farming started | End Time: <la>${new Date(
             farm_response?.endTime
           )}</la> | Earnings Rate: <pi>${farm_response?.earningsRate}</pi>`
         );
-      } else {
+        return farm_response; // Exit the loop as farming started successfully
+      }
+
+      // Check if the response is a retryable server error
+      if (farm_response === false) {
         logger.warning(
           `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Failed to start farming. Retrying again...`
         );
-        farm_response = false;
-        await sleep(3);
+        await sleep(3); // Wait before retrying
+        continue;
+      }
+
+      // Check if the response is an error message (non-retryable)
+      if (typeof farm_response === "string" && farm_response !== "error") {
+        logger.error(
+          `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Farming failed with message: <la>${farm_response}</la>. Exiting...`
+        );
+        break; // Exit the loop for non-retryable errors
+      }
+
+      // Handle generic error case
+      if (farm_response === "error") {
+        logger.error(
+          `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Farming failed due to an unknown error. Exiting...`
+        );
+        break; // Exit the loop on unknown errors
       }
     }
+
+    return null; // Return null if farming couldn't be started
   }
 
   async #start_game(http_client) {
     let game_response = false;
+
     while (typeof game_response === "boolean" && !game_response) {
       game_response = await this.api.start_game(http_client);
-      if (
-        _.isNull(game_response) ||
-        _.isEmpty(game_response) ||
-        _.isNull(game_response?.gameId)
-      ) {
+
+      // If it's a retryable error, continue retrying
+      if (game_response === false) {
         logger.warning(
           `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Failed to start game. Retrying again...`
         );
-        game_response = false;
-        await sleep(3);
+        await sleep(5);
+        continue; // Continue the loop
+      }
+
+      // If it's a non-retryable error (null), exit the loop
+      if (_.isNull(game_response)) {
+        logger.warning(
+          `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Failed to start game. Non-retryable error occurred, stopping retries.`
+        );
+        break; // Exit the loop
+      }
+
+      // Exit the loop when gameId is received
+      if (!_.isNull(game_response?.gameId)) {
+        return game_response?.gameId;
       }
     }
-    return game_response?.gameId;
+
+    return null; // Return null if gameId could not be retrieved
   }
 
-  async #claim_game_geward(http_client, gameId, points) {
+  async #claim_game_reward(http_client, gameId, points) {
     const data = { gameId, points };
     let game_reward = false;
+
     while (typeof game_reward === "boolean" && !game_reward) {
       game_reward = await this.api.claim_game_reward(http_client, data);
-      if (_.isNull(game_reward) || _.isEmpty(game_reward)) {
+
+      // Handle retryable errors
+      if (game_reward === false) {
         logger.warning(
           `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Failed to claim game reward. Retrying again...`
         );
-        game_reward = false;
-        await sleep(3);
+        await sleep(5);
+        continue;
+      }
+
+      // Handle game not found (404)
+      if (game_reward === "not_found") {
+        logger.error(
+          `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Game reward not found for gameId: <la>${gameId}</la>. Exiting...`
+        );
+        break; // Exit the loop if the game is not found
+      }
+
+      // Handle non-retryable errors (e.g., other than 500)
+      if (_.isNull(game_reward)) {
+        logger.error(
+          `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Failed to claim game reward. Non-retryable error occurred, stopping retries.`
+        );
+        break; // Exit the loop for non-retryable errors
+      }
+
+      // Exit the loop if reward is successfully claimed
+      if (!_.isEmpty(game_reward)) {
+        return game_reward; // Successfully claimed reward
       }
     }
-    return game_reward;
+
+    return null; // Return null if reward couldn't be claimed
   }
 
   async handle_game(http_client) {
@@ -253,7 +377,7 @@ class Fetchers {
         await sleep(GAME_DURATION);
 
         const points = _.random(130, 220);
-        const game_reward = await this.#claim_game_geward(
+        const game_reward = await this.#claim_game_reward(
           http_client,
           gameId,
           points
@@ -316,7 +440,7 @@ class Fetchers {
       );
       await sleep(POST_CLAIM_DELAY);
 
-      const claim_response = await await this.#claim_tasks(
+      const claim_response = await this.#claim_tasks(
         http_client,
         task?.id,
         task?.title

@@ -205,6 +205,9 @@ class ApiRequest {
       );
       return response.data;
     } catch (error) {
+      if (error?.response?.status >= 500) {
+        return false;
+      }
       if (error?.response?.status === 404) {
         return "not_found";
       }
@@ -212,13 +215,12 @@ class ApiRequest {
         logger.warning(
           `<ye>[${this.bot_name}]</ye> | ${this.session_name} | ⚠️ Error while <b>claiming game reward:</b> ${error?.response?.data?.message}`
         );
-        return "error";
       } else {
         logger.error(
           `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Error while <b>claiming game reward:</b> ${error.message}`
         );
-        return null;
       }
+      return null;
     }
   }
 
@@ -236,12 +238,13 @@ class ApiRequest {
         logger.warning(
           `<ye>[${this.bot_name}]</ye> | ${this.session_name} | ⚠️ Error while <b>starting farming:</b> ${error?.response?.data?.message}`
         );
+        return error?.response?.data?.message;
       } else {
         logger.error(
           `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Error while <b>starting farming:</b> ${error.message}`
         );
       }
-      return null;
+      return "error";
     }
   }
 
