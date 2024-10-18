@@ -4,6 +4,10 @@
 
 # Use Node.Js 18 or later
 
+# System Requirements
+
+[Read this](https://t.me/freddy_bots/100)
+
 ## Functionality
 
 | Functional                            | Supported |
