@@ -1,4 +1,6 @@
 const app = require("../config/app");
+const settings = require("../config/config");
+const { GP } = require("./helper");
 const logger = require("./logger");
 const sleep = require("./sleep");
 var _ = require("lodash");
@@ -309,15 +311,15 @@ class Fetchers {
 
       // Exit the loop when gameId is received
       if (!_.isNull(game_response?.gameId)) {
-        return game_response?.gameId;
+        return game_response;
       }
     }
 
     return null; // Return null if gameId could not be retrieved
   }
 
-  async #claim_game_reward(http_client, gameId, points) {
-    const data = { gameId, points };
+  async #claim_game_reward(http_client, payload) {
+    const data = { payload };
     let game_reward = false;
 
     while (typeof game_reward === "boolean" && !game_reward) {
@@ -358,8 +360,11 @@ class Fetchers {
   }
 
   async handle_game(http_client) {
-    const SLEEP_BEFORE_GAME = 20; // seconds
-    const GAME_DURATION = 35; // seconds
+    const SLEEP_BEFORE_GAME = _.random(
+      settings.DELAY_BETWEEN_GAME[0],
+      settings.DELAY_BETWEEN_GAME[1]
+    ); // seconds
+    const GAME_DURATION = 30.05; // seconds
     let profile_data = await this.fetch_user_data(http_client);
 
     while (profile_data?.playPasses > 0) {
@@ -368,26 +373,45 @@ class Fetchers {
       );
       await sleep(SLEEP_BEFORE_GAME);
 
-      const gameId = await this.#start_game(http_client);
+      const start_game = await this.#start_game(http_client);
 
-      if (gameId) {
+      if (start_game && start_game?.gameId) {
         logger.info(
-          `<ye>[${this.bot_name}]</ye> | ${this.session_name} | 🎲  Game started | Duration: <la>${GAME_DURATION} seconds</la>`
+          `<ye>[${this.bot_name}]</ye> | ${this.session_name} | 🎲  Game started | Duration: <la>30 seconds</la>`
         );
-        await sleep(GAME_DURATION);
+        const GPM = await GP();
+        if (!_.isNull(GPM)) {
+          const result = await GPM(start_game?.gameId, start_game);
+          if (
+            !_.isEmpty(result) &&
+            result?.p_x &&
+            result?.pts &&
+            result?.executionTime
+          ) {
+            await sleep(GAME_DURATION - result.executionTime);
 
-        const points = _.random(130, 220);
-        const game_reward = await this.#claim_game_reward(
-          http_client,
-          gameId,
-          points
-        );
+            const game_reward = await this.#claim_game_reward(
+              http_client,
+              result?.p_x
+            );
 
-        if (game_reward?.toLowerCase() === "ok") {
-          profile_data = await this.fetch_user_data(http_client); // Get latest profile data after the game
-          logger.info(
-            `<ye>[${this.bot_name}]</ye> | ${this.session_name} | 🎲  Game ended  | Earnings: <gr>+${points}</gr> Blum points | Available Play Passes: <ye>${profile_data?.playPasses}</ye> | Balance: <lb>${profile_data?.availableBalance}</lb>`
+            if (game_reward?.toLowerCase() === "ok") {
+              profile_data = await this.fetch_user_data(http_client); // Get latest profile data after the game
+              logger.info(
+                `<ye>[${this.bot_name}]</ye> | ${this.session_name} | 🎲  Game ended  | Earnings: <gr>+${result?.pts}</gr> Blum points | Available Play Passes: <ye>${profile_data?.playPasses}</ye> | Balance: <lb>${profile_data?.availableBalance}</lb>`
+              );
+            }
+          } else {
+            logger.error(
+              `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Failed to get game payload. Exiting...`
+            );
+            break;
+          }
+        } else {
+          logger.error(
+            `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Failed to GPM. Exiting...`
           );
+          break;
         }
       }
 

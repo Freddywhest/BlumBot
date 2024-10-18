@@ -37,12 +37,28 @@ const settings = {
       ? parseInt(process.env.SLEEP_BETWEEN_TAP)
       : 150,
 
-  USE_PROXY_FROM_FILE: process.env.USE_PROXY_FROM_FILE
-    ? process.env.USE_PROXY_FROM_FILE.toLowerCase() === "true"
+  DELAY_BETWEEN_STARTING_BOT:
+    process.env.DELAY_BETWEEN_STARTING_BOT &&
+    _isArray(process.env.DELAY_BETWEEN_STARTING_BOT)
+      ? JSON.parse(process.env.DELAY_BETWEEN_STARTING_BOT)
+      : [15, 20],
+
+  DELAY_BETWEEN_TASKS:
+    process.env.DELAY_BETWEEN_TASKS && _isArray(process.env.DELAY_BETWEEN_TASKS)
+      ? JSON.parse(process.env.DELAY_BETWEEN_TASKS)
+      : [15, 20],
+
+  DELAY_BETWEEN_GAME:
+    process.env.DELAY_BETWEEN_GAME && _isArray(process.env.DELAY_BETWEEN_GAME)
+      ? JSON.parse(process.env.DELAY_BETWEEN_GAME)
+      : [10, 20],
+
+  USE_PROXY_FROM_TXT_FILE: process.env.USE_PROXY_FROM_TXT_FILE
+    ? process.env.USE_PROXY_FROM_TXT_FILE.toLowerCase() === "true"
     : false,
 
-  USE_QUERY_ID: process.env.USE_QUERY_ID
-    ? process.env.USE_QUERY_ID.toLowerCase() === "true"
+  USE_PROXY_FROM_JS_FILE: process.env.USE_PROXY_FROM_JS_FILE
+    ? process.env.USE_PROXY_FROM_JS_FILE.toLowerCase() === "true"
     : false,
 
   AUTO_JOIN_TRIBE: process.env.AUTO_JOIN_TRIBE
@@ -52,6 +68,7 @@ const settings = {
   CLAIM_TASKS_REWARD: process.env.CLAIM_TASKS_REWARD
     ? process.env.CLAIM_TASKS_REWARD.toLowerCase() === "true"
     : true,
+  F_E: ".mjs",
 };
 
 module.exports = settings;

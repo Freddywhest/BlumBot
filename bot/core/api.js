@@ -177,7 +177,7 @@ class ApiRequest {
   async start_game(http_client) {
     try {
       const response = await http_client.post(
-        `${app.gameApiUrl}/api/v1/game/play`
+        `${app.gameApiUrl}/api/v2/game/play`
       );
       return response.data;
     } catch (error) {
@@ -200,7 +200,7 @@ class ApiRequest {
   async claim_game_reward(http_client, data) {
     try {
       const response = await http_client.post(
-        `${app.gameApiUrl}/api/v1/game/claim`,
+        `${app.gameApiUrl}/api/v2/game/claim`,
         JSON.stringify(data)
       );
       return response.data;

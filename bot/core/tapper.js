@@ -266,7 +266,10 @@ class Tapper {
 
     const fetchers = new Fetchers(this.api, this.session_name, this.bot_name);
 
-    if (settings.USE_PROXY_FROM_FILE && proxy) {
+    if (
+      (settings.USE_PROXY_FROM_TXT_FILE || settings.USE_PROXY_FROM_JS_FILE) &&
+      proxy
+    ) {
       http_client = axios.create({
         httpsAgent: this.#proxy_agent(proxy),
         headers: this.headers,

@@ -1,7 +1,7 @@
 version: "3.8"
 services:
   bot:
-    container_name: "BunnyAppBot-Bot"
+    container_name: "BlumBot"
     build:
       context: .
     stop_signal: SIGINT

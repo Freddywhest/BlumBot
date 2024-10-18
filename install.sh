@@ -12,7 +12,7 @@ else
   echo "Node.js is not installed. Installing Node.js..."
 
   # Install Node.js (This assumes a Debian-based system like Ubuntu)
-  curl -fsSL https://deb.nodesource.com/setup_16.x | sudo -E bash -
+  curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
   sudo apt-get install -y nodejs
 
   # Verify installation
@@ -27,6 +27,10 @@ fi
 # Install npm packages
 echo "Installing npm packages..."
 npm install
+
+# Install npm packages
+echo "Installing playwright dependencies..."
+npx playwright install --with-deps chromium
 
 # Verify installation of npm packages
 if [ $? -eq 0 ]; then

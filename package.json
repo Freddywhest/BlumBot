@@ -1,12 +1,15 @@
 {
   "name": "blum",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
-  "author": "",
+  "author": "FreddyWhest",
+  "hash": "bHcKC9T1nALPLxVQn4vwD471du3RAN7wSpur7Qp8PTapFJPBBxpkip1Gk3iz89qbDPyhSy",
+  "ext": ".mjs",
+  "md5": "WuykzEas0LDTwIhjYNYES5v7yZcQcK0B",
   "license": "ISC",
   "description": "",
   "dependencies": {
@@ -19,6 +22,7 @@
     "https-proxy-agent": "^7.0.5",
     "lodash": "^4.17.21",
     "moment": "^2.30.1",
+    "playwright": "^1.48.1",
     "qrcode-terminal": "^0.12.0",
     "strip-ansi": "^7.1.0",
     "telegram": "^2.22.2",
