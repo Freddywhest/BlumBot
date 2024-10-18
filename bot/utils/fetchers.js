@@ -400,6 +400,11 @@ class Fetchers {
               logger.info(
                 `<ye>[${this.bot_name}]</ye> | ${this.session_name} | 🎲  Game ended  | Earnings: <gr>+${result?.pts}</gr> Blum points | Available Play Passes: <ye>${profile_data?.playPasses}</ye> | Balance: <lb>${profile_data?.availableBalance}</lb>`
               );
+            } else {
+              logger.error(
+                `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Failed to claim game reward. Response: ${game_reward} Exiting...`
+              );
+              break;
             }
           } else {
             logger.error(
