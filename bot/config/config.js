@@ -69,6 +69,8 @@ const settings = {
     ? process.env.CLAIM_TASKS_REWARD.toLowerCase() === "true"
     : true,
   F_E: ".mjs",
+
+  CAN_CREATE_SESSION: false,
 };
 
 module.exports = settings;
