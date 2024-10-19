@@ -1,15 +1,14 @@
 {
   "name": "blum",
-  "version": "1.3.2",
+  "version": "1.3.3",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "FreddyWhest",
-  "hash": "bHcKC9T1nALPLxVQn4vwD471du3RAN7wSpur7Qp8PTapFJPBBxpkip1Gk3iz89qbDPyhSy",
-  "ext": ".mjs",
-  "md5": "WuykzEas0LDTwIhjYNYES5v7yZcQcK0B",
+  "hash": "Vq83M3qdz9BmV9f4EPDTb0D7v5ga81gZzn8nccjdDKfqEvzZ-xsmvb-b0D7v5ga81gZzn8nccjdDKfqEvzZVq83M3qdz9BmV9f4EPDT-b0D7v5ga81gZzn8nccjdDKfqEvzZ",
+  "md5": "WuykzEas0LDTwIhjYNYES5v7yZcQcK0B-cbhdks-v5ga81gZzn8nccjdDKfqEvzZVq-cjdDKfqEvzZVqv5ga81gZzn8nc",
   "license": "ISC",
   "description": "",
   "dependencies": {

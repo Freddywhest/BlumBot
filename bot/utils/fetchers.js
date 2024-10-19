@@ -1,15 +1,15 @@
 const app = require("../config/app");
 const settings = require("../config/config");
-const { GP } = require("./helper");
 const logger = require("./logger");
 const sleep = require("./sleep");
 var _ = require("lodash");
 
 class Fetchers {
-  constructor(api, session_name, bot_name) {
+  constructor(api, session_name, bot_name, mmk) {
     this.api = api;
     this.session_name = session_name;
     this.bot_name = bot_name;
+    this.mmk = mmk;
   }
 
   async get_access_token(tgWebData, http_client) {
@@ -379,16 +379,10 @@ class Fetchers {
         logger.info(
           `<ye>[${this.bot_name}]</ye> | ${this.session_name} | 🎲  Game started | Duration: <la>30 seconds</la>`
         );
-        const GPM = await GP();
-        if (!_.isNull(GPM)) {
-          const result = await GPM(start_game?.gameId, start_game);
-          if (
-            !_.isEmpty(result) &&
-            result?.p_x &&
-            result?.pts &&
-            result?.executionTime
-          ) {
-            await sleep(GAME_DURATION - result.executionTime);
+        if (!_.isNull(this.mmk)) {
+          const result = await this.mmk?.run(start_game?.gameId, start_game);
+          if (!_.isEmpty(result) && result?.p_x && result?.pts && result?.exc) {
+            await sleep(GAME_DURATION - result.exc);
 
             const game_reward = await this.#claim_game_reward(
               http_client,

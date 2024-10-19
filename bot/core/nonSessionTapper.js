@@ -14,13 +14,14 @@ const Fetchers = require("../utils/fetchers");
 const { HttpsProxyAgent } = require("https-proxy-agent");
 
 class NonSessionTapper {
-  constructor(query_id, query_name) {
+  constructor(query_id, query_name, lkl) {
     this.bot_name = "blum";
     this.session_name = query_name;
     this.query_id = query_id;
     this.session_user_agents = this.#load_session_data();
     this.headers = { ...headers, "user-agent": this.#get_user_agent() };
     this.api = new ApiRequest(this.session_name, this.bot_name);
+    this.lkl = lkl;
   }
 
   #load_session_data() {
@@ -109,7 +110,12 @@ class NonSessionTapper {
     let access_token;
     let tasks = [];
 
-    const fetchers = new Fetchers(this.api, this.session_name, this.bot_name);
+    const fetchers = new Fetchers(
+      this.api,
+      this.session_name,
+      this.bot_name,
+      this.lkl
+    );
 
     if (settings.USE_PROXY_FROM_FILE && proxy) {
       http_client = axios.create({

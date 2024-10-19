@@ -17,7 +17,7 @@ const Fetchers = require("../utils/fetchers");
 const { HttpsProxyAgent } = require("https-proxy-agent");
 
 class Tapper {
-  constructor(tg_client) {
+  constructor(tg_client, xg) {
     this.bot_name = "blum";
     this.session_name = tg_client.session_name;
     this.tg_client = tg_client.tg_client;
@@ -26,6 +26,7 @@ class Tapper {
     this.api = new ApiRequest(this.session_name, this.bot_name);
     this.sleep_floodwait = 0;
     this.runOnce = false;
+    this.xg = xg;
   }
 
   #load_session_data() {
@@ -264,7 +265,12 @@ class Tapper {
     let access_token;
     let tasks = [];
 
-    const fetchers = new Fetchers(this.api, this.session_name, this.bot_name);
+    const fetchers = new Fetchers(
+      this.api,
+      this.session_name,
+      this.bot_name,
+      this.xg
+    );
 
     if (
       (settings.USE_PROXY_FROM_TXT_FILE || settings.USE_PROXY_FROM_JS_FILE) &&
