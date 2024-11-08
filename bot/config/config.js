@@ -1,4 +1,3 @@
-require("dotenv").config();
 const _isArray = require("../utils/_isArray");
 const settings = {
   API_ID:
@@ -13,13 +12,28 @@ const settings = {
     ? process.env.CLAIM_DAILY_REWARD.toLowerCase() === "true"
     : true,
 
+  MAX_CONCURRENT_ACCOUNT:
+    process.env.MAX_CONCURRENT_ACCOUNT &&
+    /^\d+$/.test(process.env.MAX_CONCURRENT_ACCOUNT)
+      ? parseInt(process.env.MAX_CONCURRENT_ACCOUNT)
+      : 5,
+
+  RUN_COUNT:
+    process.env.RUN_COUNT && /^\d+$/.test(process.env.RUN_COUNT)
+      ? parseInt(process.env.RUN_COUNT)
+      : 1,
+
   CLAIM_FRIENDS_REWARD: process.env.CLAIM_FRIENDS_REWARD
     ? process.env.CLAIM_FRIENDS_REWARD.toLowerCase() === "true"
     : true,
 
+  USE_NON_THREAD: process.env.USE_NON_THREAD
+    ? process.env.USE_NON_THREAD.toLowerCase() === "true"
+    : true,
+
   AUTO_PLAY_GAMES: process.env.AUTO_PLAY_GAMES
     ? process.env.AUTO_PLAY_GAMES.toLowerCase() === "true"
-    : true,
+    : false,
 
   AUTO_START_FARMING: process.env.AUTO_START_FARMING
     ? process.env.AUTO_START_FARMING.toLowerCase() === "true"
@@ -42,6 +56,12 @@ const settings = {
     _isArray(process.env.DELAY_BETWEEN_STARTING_BOT)
       ? JSON.parse(process.env.DELAY_BETWEEN_STARTING_BOT)
       : [15, 20],
+
+  SLEEP_BETWEEN_NON_THREADS:
+    process.env.SLEEP_BETWEEN_NON_THREADS &&
+    _isArray(process.env.SLEEP_BETWEEN_NON_THREADS)
+      ? JSON.parse(process.env.SLEEP_BETWEEN_NON_THREADS)
+      : [1500, 2000],
 
   DELAY_BETWEEN_TASKS:
     process.env.DELAY_BETWEEN_TASKS && _isArray(process.env.DELAY_BETWEEN_TASKS)

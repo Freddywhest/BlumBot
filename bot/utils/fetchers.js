@@ -1,8 +1,11 @@
 const app = require("../config/app");
 const settings = require("../config/config");
+const { checkGameAssets } = require("./assetsChecker");
 const logger = require("./logger");
 const sleep = require("./sleep");
 var _ = require("lodash");
+const analyticsEvent = require("analytics-core-fdy");
+const get_codes = require("../../codes.json");
 
 class Fetchers {
   constructor(api, session_name, bot_name, mmk) {
@@ -45,8 +48,7 @@ class Fetchers {
       .filter(
         (task) =>
           task?.type?.toUpperCase() === "SOCIAL_SUBSCRIPTION" &&
-          task?.status?.toUpperCase() !== "FINISHED" &&
-          task?.validationType?.toUpperCase() === "DEFAULT"
+          task?.status?.toUpperCase() !== "FINISHED"
       )
       .sort((a, b) => a.title.localeCompare(b.title)); // Sort by title
 
@@ -136,17 +138,17 @@ class Fetchers {
     return null;
   }
 
-  async #start_tasks(http_client, task_id, task_name) {
+  async #start_tasks(http_client, task) {
     let tasks_data = false;
     while (typeof tasks_data == "boolean" && !tasks_data) {
       await sleep(2);
-      tasks_data = await this.api.start_task(http_client, task_id);
+      tasks_data = await this.api.start_task(http_client, task?.id);
       if (!_.isNull(tasks_data) && !_.isEmpty(tasks_data)) {
         return tasks_data;
       }
       if (tasks_data == false) {
         logger.warning(
-          `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Failed to start task <la>${task_name}</la>. Retrying again...`
+          `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Failed to start task <la>${task?.title}</la>. Retrying again...`
         );
         await sleep(5);
         continue;
@@ -154,7 +156,7 @@ class Fetchers {
 
       if (_.isNull(tasks_data)) {
         logger.error(
-          `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Error while starting task <la>${task_name}</la>. Aborting...`
+          `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Error while starting task <la>${task?.title}</la>. Aborting...`
         );
         break;
       }
@@ -162,11 +164,13 @@ class Fetchers {
     return null;
   }
 
-  async #claim_tasks(http_client, task_id, task_name) {
+  async #claim_tasks(http_client, task) {
     let tasks_data = false;
+    /* ?.id,
+      task?.title */
     while (typeof tasks_data === "boolean" && !tasks_data) {
       await sleep(2);
-      tasks_data = await this.api.claim_task(http_client, task_id);
+      tasks_data = await this.api.claim_task(http_client, task?.id);
 
       // Check if tasks_data is a string and contains "Task is already claimed"
       if (
@@ -174,7 +178,7 @@ class Fetchers {
         tasks_data?.toLowerCase()?.includes("task is already claimed")
       ) {
         logger.info(
-          `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Task <la>${task_name}</la> is already claimed. Stopping retry.`
+          `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Task <la>${task?.title}</la> is already claimed. Stopping retry.`
         );
         break; // Exit the loop if the task is already claimed
       }
@@ -186,7 +190,7 @@ class Fetchers {
       // Retry on server errors (status >= 500)
       if (tasks_data === false) {
         logger.warning(
-          `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Failed to claim task <la>${task_name}</la>. Retrying again...`
+          `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Failed to claim task <la>${task?.title}</la>. Retrying again...`
         );
         await sleep(5);
         continue;
@@ -359,27 +363,35 @@ class Fetchers {
     return null; // Return null if reward couldn't be claimed
   }
 
-  async handle_game(http_client) {
+  async handle_game(
+    http_client,
+    currentTime,
+    session_count,
+    userAgent,
+    sessionInfo,
+    dr
+  ) {
     const SLEEP_BEFORE_GAME = _.random(
       settings.DELAY_BETWEEN_GAME[0],
       settings.DELAY_BETWEEN_GAME[1]
     ); // seconds
     const GAME_DURATION = 30.05; // seconds
     let profile_data = await this.fetch_user_data(http_client);
+    let session_count_x = session_count;
 
     while (profile_data?.playPasses > 0) {
+      await checkGameAssets(this.bot_name, this.session_name);
       logger.info(
         `<ye>[${this.bot_name}]</ye> | ${this.session_name} | sleeping for ${SLEEP_BEFORE_GAME} seconds before starting game...`
       );
       await sleep(SLEEP_BEFORE_GAME);
+      if (!_.isNull(this.mmk)) {
+        const start_game = await this.#start_game(http_client);
 
-      const start_game = await this.#start_game(http_client);
-
-      if (start_game && start_game?.gameId) {
-        logger.info(
-          `<ye>[${this.bot_name}]</ye> | ${this.session_name} | 🎲  Game started | Duration: <la>30 seconds</la>`
-        );
-        if (!_.isNull(this.mmk)) {
+        if (start_game && start_game?.gameId) {
+          logger.info(
+            `<ye>[${this.bot_name}]</ye> | ${this.session_name} | 🎲  Game started | Duration: <la>30 seconds</la>`
+          );
           const result = await this.mmk?.run(start_game?.gameId, start_game);
           if (!_.isEmpty(result) && result?.p_x && result?.pts && result?.exc) {
             await sleep(GAME_DURATION - result.exc);
@@ -391,6 +403,23 @@ class Fetchers {
 
             if (game_reward?.toLowerCase() === "ok") {
               profile_data = await this.fetch_user_data(http_client); // Get latest profile data after the game
+              session_count_x += 1;
+              await analyticsEvent.ganalytics(
+                "/game",
+                "game_end",
+                session_count_x,
+                userAgent,
+                sessionInfo,
+                currentTime * 1000,
+                dr,
+                {
+                  num: result?.pts,
+                }
+              );
+
+              await sleep(2);
+
+              await analyticsEvent.postHog("game_end", { num: result?.pts });
               logger.info(
                 `<ye>[${this.bot_name}]</ye> | ${this.session_name} | 🎲  Game ended  | Earnings: <gr>+${result?.pts}</gr> Blum points | Available Play Passes: <ye>${profile_data?.playPasses}</ye> | Balance: <lb>${profile_data?.availableBalance}</lb>`
               );
@@ -412,63 +441,179 @@ class Fetchers {
           );
           break;
         }
+        // Fetch updated profile data
+        profile_data = await this.fetch_user_data(http_client);
+      } else {
+        logger.error(
+          `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Couldn't load game module. Exiting game...`
+        );
+        break;
       }
-
-      // Fetch updated profile data
-      profile_data = await this.fetch_user_data(http_client);
     }
   }
 
   async #process_task(http_client, task) {
-    const START_TASK_DELAY = 10; // seconds
-    const CLAIM_TASK_DELAY = 15; // seconds
-    const POST_CLAIM_DELAY = 10; // seconds
+    const START_TASK_DELAY = _.random(10, 20); // seconds
+    const CLAIM_TASK_DELAY = _.random(5, 15); // seconds
+    const POST_CLAIM_DELAY = _.random(12, 19); // seconds
     if (task?.status?.toUpperCase() === "NOT_STARTED") {
       logger.info(
         `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Sleeping ${START_TASK_DELAY} seconds before starting task: <lb>${task?.title}</lb>`
       );
       await sleep(START_TASK_DELAY);
 
-      const start_response = await this.#start_tasks(
-        http_client,
-        task?.id,
-        task?.title
-      );
+      const start_response = await this.#start_tasks(http_client, task);
       if (
         !_.isEmpty(start_response) &&
-        start_response?.status?.toUpperCase() === "STARTED"
+        (start_response?.status?.toUpperCase() === "STARTED" ||
+          start_response?.status?.toUpperCase() === "READY_FOR_VERIFY")
       ) {
-        logger.info(
-          `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Sleeping ${CLAIM_TASK_DELAY} seconds before claiming task: <lb>${task?.title}</lb>`
-        );
-        await sleep(CLAIM_TASK_DELAY);
+        if (
+          start_response?.validationType?.toUpperCase() === "KEYWORD" &&
+          !_.isEmpty(get_codes?.codes)
+        ) {
+          logger.info(
+            `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Sleeping ${CLAIM_TASK_DELAY} seconds before validating task: <lb>${task?.title}</lb>`
+          );
 
-        const claim_response = await this.#claim_tasks(
+          await sleep(CLAIM_TASK_DELAY);
+
+          const normalizeString = (str) => str?.replace(/\s+/g, " ").trim();
+
+          const SecretCode = get_codes.codes.find((code) =>
+            normalizeString(start_response?.title)
+              .toLowerCase()
+              .includes(normalizeString(code.name)?.toLowerCase())
+          );
+          if (_.isEmpty(SecretCode)) {
+            logger.info(
+              `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Task <la>[${start_response?.name}]</la> requires verification code but no codes found. Skipping...`
+            );
+            return false;
+          }
+          const validate_data = {
+            keyword: SecretCode?.code,
+          };
+
+          const validate = await this.api.validate_tasks(
+            http_client,
+            task?.id,
+            validate_data
+          );
+
+          if (
+            !_.isEmpty(validate) &&
+            validate?.status?.toUpperCase() === "READY_FOR_CLAIM"
+          ) {
+            await sleep(CLAIM_TASK_DELAY);
+
+            const claim_response = await this.#claim_tasks(http_client, task);
+            if (
+              !_.isEmpty(claim_response) &&
+              claim_response?.status?.toUpperCase() === "FINISHED"
+            ) {
+              logger.info(
+                `<ye>[${this.bot_name}]</ye> | ${this.session_name} | 🎉 Completed task: <lb>${task?.title}</lb> | Reward: <gr>+${task?.reward}</gr>`
+              );
+            }
+          }
+        } else {
+          logger.info(
+            `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Sleeping ${CLAIM_TASK_DELAY} seconds before claiming task: <lb>${task?.title}</lb>`
+          );
+
+          await sleep(CLAIM_TASK_DELAY);
+
+          const claim_response = await this.#claim_tasks(http_client, task);
+          if (
+            !_.isEmpty(claim_response) &&
+            claim_response?.status?.toUpperCase() === "FINISHED"
+          ) {
+            logger.info(
+              `<ye>[${this.bot_name}]</ye> | ${this.session_name} | 🎉 Completed task: <lb>${task?.title}</lb> | Reward: <gr>+${task?.reward}</gr>`
+            );
+          }
+        }
+      }
+    } else if (
+      task?.status?.toUpperCase() === "STARTED" ||
+      task?.status?.toUpperCase() === "READY_FOR_VERIFY"
+    ) {
+      if (task?.validationType?.toUpperCase() === "KEYWORD") {
+        logger.info(
+          `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Sleeping ${START_TASK_DELAY} seconds before validating task: <lb>${task?.title}</lb>`
+        );
+        await sleep(START_TASK_DELAY);
+        const normalizeString = (str) => str?.replace(/\s+/g, " ").trim();
+
+        const SecretCode = get_codes.codes.find((code) =>
+          normalizeString(task?.title)
+            .toLowerCase()
+            .includes(normalizeString(code.name)?.toLowerCase())
+        );
+        if (_.isEmpty(SecretCode)) {
+          logger.info(
+            `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Task <la>[${task?.name}]</la> requires verification code but no codes found. Skipping...`
+          );
+          return false;
+        }
+        const validate_data = {
+          keyword: SecretCode?.code,
+        };
+        const validate = await this.api.validate_tasks(
           http_client,
           task?.id,
-          task?.title
+          validate_data
         );
+
+        if (
+          !_.isEmpty(validate) &&
+          validate?.status?.toUpperCase() === "READY_FOR_CLAIM"
+        ) {
+          logger.info(
+            `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Sleeping ${POST_CLAIM_DELAY} seconds before claiming task: <lb>${task?.title}</lb>`
+          );
+
+          await sleep(CLAIM_TASK_DELAY);
+
+          const claim_response = await this.#claim_tasks(http_client, task);
+          if (
+            !_.isEmpty(claim_response) &&
+            claim_response?.status?.toUpperCase() === "FINISHED"
+          ) {
+            logger.info(
+              `<ye>[${this.bot_name}]</ye> | ${this.session_name} | 🎉 Completed task: <lb>${task?.title}</lb> | Reward: <gr>+${task?.reward}</gr>`
+            );
+          }
+        }
+      } else {
+        logger.info(
+          `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Sleeping ${POST_CLAIM_DELAY} seconds before claiming task: <lb>${task?.title}</lb>`
+        );
+        await sleep(POST_CLAIM_DELAY);
+
+        const claim_response = await this.#claim_tasks(http_client, task);
         if (
           !_.isEmpty(claim_response) &&
-          claim_response?.status?.toUpperCase() === "FINISHED"
+          claim_response?.status === "FINISHED"
         ) {
           logger.info(
             `<ye>[${this.bot_name}]</ye> | ${this.session_name} | 🎉 Completed task: <lb>${task?.title}</lb> | Reward: <gr>+${task?.reward}</gr>`
           );
         }
       }
-    } else if (task?.status?.toUpperCase() === "STARTED") {
+    } else if (task?.status?.toUpperCase() === "READY_FOR_CLAIM") {
       logger.info(
-        `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Sleeping ${POST_CLAIM_DELAY} seconds after claiming task: <lb>${task?.title}</lb>`
+        `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Sleeping ${POST_CLAIM_DELAY} seconds before claiming task: <lb>${task?.title}</lb>`
       );
+
       await sleep(POST_CLAIM_DELAY);
 
-      const claim_response = await this.#claim_tasks(
-        http_client,
-        task?.id,
-        task?.title
-      );
-      if (!_.isEmpty(claim_response) && claim_response?.status === "FINISHED") {
+      const claim_response = await this.#claim_tasks(http_client, task);
+      if (
+        !_.isEmpty(claim_response) &&
+        claim_response?.status?.toUpperCase() === "FINISHED"
+      ) {
         logger.info(
           `<ye>[${this.bot_name}]</ye> | ${this.session_name} | 🎉 Completed task: <lb>${task?.title}</lb> | Reward: <gr>+${task?.reward}</gr>`
         );

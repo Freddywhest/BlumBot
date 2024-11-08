@@ -446,6 +446,31 @@ class ApiRequest {
       }
     }
   }
+
+  async validate_tasks(http_client, task_id, data) {
+    try {
+      const response = await http_client.post(
+        `${app.earnApiUrl}/api/v1/tasks/${task_id}/validate`,
+        JSON.stringify(data)
+      );
+      return response.data;
+    } catch (error) {
+      if (error?.response?.status >= 500) {
+        return false;
+      }
+      if (error?.response?.data?.message) {
+        logger.warning(
+          `<ye>[${this.bot_name}]</ye> | ${this.session_name} | ⚠️ Error while <b>validating tasks:</b> ${error?.response?.data?.message}`
+        );
+        return error?.response?.data?.message;
+      } else {
+        logger.error(
+          `<ye>[${this.bot_name}]</ye> | ${this.session_name} | Error while <b>validating tasks:</b> ${error.message}`
+        );
+        return null;
+      }
+    }
+  }
 }
 
 module.exports = ApiRequest;
