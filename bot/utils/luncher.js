@@ -119,6 +119,7 @@ class Luncher {
       if (this.#r) {
         await this.#r.init();
       }
+
       const tgClients = await this.#get_tg_clients();
       await this.#run_tasks(tgClients);
     } else if (action === 3) {

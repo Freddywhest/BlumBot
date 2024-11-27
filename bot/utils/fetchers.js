@@ -393,6 +393,7 @@ class Fetchers {
             `<ye>[${this.bot_name}]</ye> | ${this.session_name} | 🎲  Game started | Duration: <la>30 seconds</la>`
           );
           const result = await this.mmk?.run(start_game?.gameId, start_game);
+
           if (!_.isEmpty(result) && result?.p_x && result?.pts && result?.exc) {
             await sleep(GAME_DURATION - result.exc);
 
